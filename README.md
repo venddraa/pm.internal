@@ -83,16 +83,13 @@ docker compose up -d app frontend
 
 Buka **http://localhost:8000**. Jangan membuka port Vite sebagai halaman aplikasi. Wayfinder menghasilkan file route TypeScript saat Vite mulai; jangan jalankan typecheck sebelum Vite/build/generate pertama selesai.
 
-Login demo untuk clone baru:
+### Akses akun
 
-| Peran  | Login                  | Password development |
-| ------ | ---------------------- | -------------------- |
-| Admin  | `admin@monitor.local`  | `Monitor123!`        |
-| Member | `vendra@monitor.local` | `Monitor123!`        |
+Akun tim menggunakan identitas `nama@planning`. Hubungi Vendra untuk mendapatkan akun dan password awal; kredensial dibagikan secara langsung, bukan melalui README. Nama profil dan password dapat diubah melalui menu Pengaturan setelah login.
 
-Seeder menambahkan contoh proyek, anggota, tugas, komentar, dan notifikasi. Jalankan seed hanya saat setup database demo baru. Jangan mengulang seed pada database berisi pekerjaan tim.
+**GitHub menyimpan source, bukan database.** Akun tim yang sudah dibuat tidak otomatis tersedia pada database hasil clone baru. Untuk development dengan database sendiri, koordinasikan penyiapan akun lokal dengan Vendra terlebih dahulu.
 
-**GitHub menyimpan source, bukan database.** Akun internal `@planning`, password lokal, tugas yang sudah dibuat, dan attachment milik pengembang tidak ikut di-clone. Gunakan akun demo untuk development, atau buat akun sendiri lewat menu admin. Jangan memasukkan dump database/password tim ke repository.
+Seeder menambahkan data contoh untuk development, bukan akun tim yang sudah disepakati. Jalankan seed hanya saat setup database contoh baru; jangan mengulangnya pada database berisi pekerjaan tim. Jangan memasukkan dump database atau password tim ke repository.
 
 ## Menjalankan dan menghentikan sehari-hari
 
@@ -158,7 +155,7 @@ docker compose run --rm --no-deps app npm run build
 - **Permission denied di Linux:** samakan `LOCAL_UID`/`LOCAL_GID` dengan `id -u`/`id -g`, lalu build ulang. Pada Fedora/SELinux enforcing, bind mount project yang dibagi app/frontend dapat memerlukan akhiran `:z` (`.:/var/www/html:z`); jangan relabel folder home secara keseluruhan.
 - **Perubahan file tidak muncul di Windows:** simpan clone di filesystem WSL2, bukan `/mnt/c`, lalu jalankan Compose dari WSL.
 - **Vendor atau node_modules bermasalah:** install ulang dari container menggunakan `composer install` dan `npm ci`. Jangan berbagi folder dependency hasil instalasi antar-OS.
-- **Login dengan `nama@planning`:** akun itu hanya tersedia pada database tempat akun dibuat. Clone baru memakai akun demo di atas.
+- **Login dengan `nama@planning`:** akun hanya tersedia pada database tempat akun dibuat. Jika memakai database lokal baru, hubungi Vendra untuk penyiapan akun.
 - **Lupa password:** development memakai mail driver `log`; email reset masuk `storage/logs/laravel.log`, tidak dikirim ke internet.
 
 ## Kolaborasi GitHub
