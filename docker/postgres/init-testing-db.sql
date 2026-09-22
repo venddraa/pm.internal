@@ -1,0 +1,1 @@
+CREATE DATABASE saya_akan_monitor_test;

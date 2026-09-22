@@ -1,0 +1,53 @@
+services:
+    app:
+        image: ${COMPOSE_PROJECT_NAME:-pm-internal}-dev:local
+        build: &app-build
+            context: .
+            args:
+                APP_UID: ${LOCAL_UID:-1000}
+                APP_GID: ${LOCAL_GID:-1000}
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+        environment:
+            DB_HOST: postgres
+        depends_on:
+            postgres:
+                condition: service_healthy
+        ports:
+            - '127.0.0.1:${APP_PORT:-8000}:8000'
+
+    frontend:
+        image: ${COMPOSE_PROJECT_NAME:-pm-internal}-dev:local
+        build: *app-build
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+        environment:
+            DB_HOST: postgres
+            VITE_PORT: ${VITE_PORT:-5173}
+            VITE_HMR_HOST: localhost
+        command: npm run dev -- --host 0.0.0.0
+        ports:
+            - '127.0.0.1:${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+
+    postgres:
+        image: postgres:17-alpine
+        environment:
+            POSTGRES_DB: saya_akan_monitor
+            POSTGRES_USER: saya_monitor
+            POSTGRES_PASSWORD: local_password
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./docker/postgres/init-testing-db.sql:/docker-entrypoint-initdb.d/10-testing-db.sql:ro
+        healthcheck:
+            test:
+                ['CMD-SHELL', 'pg_isready -U saya_monitor -d saya_akan_monitor']
+            interval: 5s
+            timeout: 5s
+            retries: 10
+        ports:
+            - '127.0.0.1:${FORWARD_DB_PORT:-5432}:5432'
+
+volumes:
+    postgres_data:

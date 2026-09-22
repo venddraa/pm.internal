@@ -1,0 +1,400 @@
+<div
+    id="sam-bubble-preview"
+    aria-label="Konsep tampilan proyek dengan kartu membulat"
+>
+    <style>
+        #sam-bubble-preview {
+            --sam-bg: light-dark(#f3f6fb, #171e2b);
+            --sam-panel: light-dark(#ffffff, #242e3e);
+            --sam-ink: light-dark(#23344d, #edf2fa);
+            --sam-muted: light-dark(#637187, #bac7da);
+            --sam-line: light-dark(#e4eaf2, #3d4b61);
+            --sam-blue: light-dark(#145db8, #9bc8ff);
+            --sam-blue-soft: light-dark(#e6f0ff, #213f65);
+            --sam-lane: light-dark(#eaf0f8, #1c2737);
+            --sam-lane-blue: light-dark(#e8f1fc, #1d3048);
+            --sam-gold: light-dark(#fff0c6, #554424);
+            --sam-gold-ink: light-dark(#795412, #f6d88b);
+            --sam-shadow: light-dark(#1835530a, #00000024);
+            --sam-radius: 18px;
+            --sam-space: 16px;
+            --sam-outline: transparent;
+            color: var(--sam-ink);
+            font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            background: var(--sam-bg);
+            border-radius: 24px;
+            padding: 20px;
+        }
+        #sam-bubble-preview * {
+            box-sizing: border-box;
+        }
+        #sam-bubble-preview button {
+            font: inherit;
+            cursor: pointer;
+        }
+        #sam-bubble-preview .sam-heading {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        #sam-bubble-preview .sam-eyebrow {
+            color: var(--sam-muted);
+            font-size: 12px;
+        }
+        #sam-bubble-preview h2 {
+            margin: 3px 0 0;
+            font-size: 19px;
+            line-height: 1.3;
+            font-weight: 500;
+        }
+        #sam-bubble-preview .sam-project-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 99px;
+            background: var(--sam-panel);
+            padding: 6px 12px;
+            color: var(--sam-blue);
+            font-size: 12px;
+        }
+        #sam-bubble-preview .sam-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        #sam-bubble-preview .sam-view-tabs {
+            display: inline-flex;
+            gap: 4px;
+            background: var(--sam-panel);
+            border-radius: 99px;
+            padding: 4px;
+            margin-bottom: 18px;
+        }
+        #sam-bubble-preview .sam-view-tab {
+            border: 0;
+            color: var(--sam-muted);
+            background: transparent;
+            border-radius: 99px;
+            padding: 7px 15px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        #sam-bubble-preview .sam-view-tab[aria-selected='true'] {
+            background: var(--sam-blue-soft);
+            color: var(--sam-blue);
+        }
+        #sam-bubble-preview .sam-board {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--sam-space);
+            align-items: start;
+        }
+        #sam-bubble-preview .sam-lane {
+            padding: 12px;
+            border-radius: calc(var(--sam-radius) + 6px);
+            background: var(--sam-lane);
+        }
+        #sam-bubble-preview .sam-lane-progress {
+            background: var(--sam-lane-blue);
+        }
+        #sam-bubble-preview .sam-lane-heading {
+            margin: 2px 4px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        #sam-bubble-preview .sam-count {
+            color: var(--sam-muted);
+            font-size: 12px;
+        }
+        #sam-bubble-preview .sam-task {
+            padding: var(--sam-space);
+            background: var(--sam-panel);
+            border: 1px solid var(--sam-outline);
+            border-radius: var(--sam-radius);
+            box-shadow: 0 3px 10px var(--sam-shadow);
+            margin-top: 10px;
+        }
+        #sam-bubble-preview .sam-ref {
+            font-size: 11px;
+            color: var(--sam-muted);
+        }
+        #sam-bubble-preview .sam-task-title {
+            margin: 5px 0 12px;
+            font-weight: 500;
+            overflow-wrap: anywhere;
+        }
+        #sam-bubble-preview .sam-chip {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 99px;
+            font-size: 11px;
+            background: var(--sam-blue-soft);
+            color: var(--sam-blue);
+            white-space: nowrap;
+        }
+        #sam-bubble-preview .sam-chip-gold {
+            background: var(--sam-gold);
+            color: var(--sam-gold-ink);
+        }
+        #sam-bubble-preview .sam-task-footer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 7px;
+            margin-top: 15px;
+            color: var(--sam-muted);
+            font-size: 12px;
+        }
+        #sam-bubble-preview .sam-person {
+            margin-left: auto;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            color: var(--sam-blue);
+            background: var(--sam-blue-soft);
+            font-size: 11px;
+        }
+        #sam-bubble-preview .sam-list {
+            background: var(--sam-panel);
+            border-radius: calc(var(--sam-radius) + 6px);
+            overflow: hidden;
+        }
+        #sam-bubble-preview .sam-list-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+            padding: var(--sam-space);
+            align-items: center;
+        }
+        #sam-bubble-preview .sam-list-row + .sam-list-row {
+            border-top: 1px solid var(--sam-line);
+        }
+        #sam-bubble-preview .sam-list-title {
+            display: block;
+            font-weight: 500;
+        }
+        #sam-bubble-preview [hidden] {
+            display: none !important;
+        }
+        @media (max-width: 520px) {
+            #sam-bubble-preview {
+                padding: 14px;
+            }
+            #sam-bubble-preview .sam-board {
+                grid-template-columns: 1fr;
+            }
+            #sam-bubble-preview .sam-list-row {
+                grid-template-columns: 1fr;
+                gap: 7px;
+            }
+            #sam-bubble-preview .sam-list-row .sam-chip {
+                justify-self: start;
+            }
+        }
+        @media (pointer: coarse) {
+            #sam-bubble-preview .sam-view-tab {
+                min-height: 44px;
+            }
+        }
+    </style>
+    <div class="sam-heading">
+        <div>
+            <div class="sam-eyebrow">Saya Akan Monitor · Contoh tampilan</div>
+            <h2>Monitoring proyek</h2>
+        </div>
+        <span class="sam-project-status"
+            ><span class="sam-dot"></span>Proyek aktif</span
+        >
+    </div>
+    <div class="sam-view-tabs" role="tablist" aria-label="Tampilan tugas">
+        <button
+            class="sam-view-tab"
+            id="sam-board-tab"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="sam-board-panel"
+        >
+            <i data-lucide="columns-3" aria-hidden="true"></i>Papan
+        </button>
+        <button
+            class="sam-view-tab"
+            id="sam-list-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="sam-list-panel"
+        >
+            <i data-lucide="list" aria-hidden="true"></i>Daftar
+        </button>
+    </div>
+    <div id="sam-board-panel" role="tabpanel" aria-labelledby="sam-board-tab">
+        <div class="sam-board">
+            <section class="sam-lane" aria-label="Belum dimulai">
+                <div class="sam-lane-heading">
+                    <span>Belum dimulai</span
+                    ><span class="sam-count">2 tugas</span>
+                </div>
+                <article class="sam-task">
+                    <span class="sam-ref">IRP-42</span>
+                    <div class="sam-task-title">
+                        Review laporan inspeksi ruas tol
+                    </div>
+                    <span class="sam-chip">Operasional</span>
+                    <div class="sam-task-footer">
+                        <i data-lucide="calendar" aria-hidden="true"></i
+                        ><span>24 Sep</span
+                        ><span class="sam-person" aria-label="Vendra">VE</span>
+                    </div>
+                </article>
+                <article class="sam-task">
+                    <span class="sam-ref">IRP-43</span>
+                    <div class="sam-task-title">
+                        Lengkapi dokumentasi lapangan
+                    </div>
+                    <span class="sam-chip">Dokumentasi</span>
+                    <div class="sam-task-footer">
+                        <i data-lucide="paperclip" aria-hidden="true"></i
+                        ><span>2 lampiran</span
+                        ><span class="sam-person" aria-label="Raina">RA</span>
+                    </div>
+                </article>
+            </section>
+            <section class="sam-lane sam-lane-progress" aria-label="Dikerjakan">
+                <div class="sam-lane-heading">
+                    <span>Dikerjakan</span
+                    ><span class="sam-count">1 tugas</span>
+                </div>
+                <article class="sam-task">
+                    <span class="sam-ref">IRP-41</span>
+                    <div class="sam-task-title">
+                        Verifikasi progres pekerjaan minggu ini
+                    </div>
+                    <span class="sam-chip sam-chip-gold">Prioritas tinggi</span>
+                    <div class="sam-task-footer">
+                        <i data-lucide="calendar" aria-hidden="true"></i
+                        ><span>Hari ini</span
+                        ><span class="sam-person" aria-label="Azmi">AZ</span>
+                    </div>
+                </article>
+            </section>
+        </div>
+    </div>
+    <div
+        id="sam-list-panel"
+        role="tabpanel"
+        aria-labelledby="sam-list-tab"
+        hidden
+    >
+        <div class="sam-list">
+            <div class="sam-list-row">
+                <div>
+                    <span class="sam-ref">IRP-42 · Vendra · 24 Sep</span
+                    ><span class="sam-list-title"
+                        >Review laporan inspeksi ruas tol</span
+                    >
+                </div>
+                <span class="sam-chip">Belum dimulai</span>
+            </div>
+            <div class="sam-list-row">
+                <div>
+                    <span class="sam-ref">IRP-43 · Raina · 2 lampiran</span
+                    ><span class="sam-list-title"
+                        >Lengkapi dokumentasi lapangan</span
+                    >
+                </div>
+                <span class="sam-chip">Belum dimulai</span>
+            </div>
+            <div class="sam-list-row">
+                <div>
+                    <span class="sam-ref">IRP-41 · Azmi · Hari ini</span
+                    ><span class="sam-list-title"
+                        >Verifikasi progres pekerjaan minggu ini</span
+                    >
+                </div>
+                <span class="sam-chip">Dikerjakan</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        (() => {
+            const root = document.getElementById('sam-bubble-preview');
+            const tabs = Array.from(root.querySelectorAll('.sam-view-tab'));
+            function activate(tab) {
+                tabs.forEach((item) => {
+                    const selected = item === tab;
+                    item.setAttribute('aria-selected', String(selected));
+                    root.querySelector(
+                        '#' + item.getAttribute('aria-controls'),
+                    ).hidden = !selected;
+                });
+            }
+            tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => activate(tab));
+                tab.addEventListener('keydown', (event) => {
+                    if (
+                        !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(
+                            event.key,
+                        )
+                    )
+                        return;
+                    event.preventDefault();
+                    const next =
+                        event.key === 'Home'
+                            ? 0
+                            : event.key === 'End'
+                              ? tabs.length - 1
+                              : (index +
+                                    (event.key === 'ArrowRight' ? 1 : -1) +
+                                    tabs.length) %
+                                tabs.length;
+                    activate(tabs[next]);
+                    tabs[next].focus();
+                });
+            });
+            const design = { radius: 18, spacing: 16, outline: false };
+            function render() {
+                root.style.setProperty('--sam-radius', design.radius + 'px');
+                root.style.setProperty('--sam-space', design.spacing + 'px');
+                root.style.setProperty(
+                    '--sam-outline',
+                    design.outline ? 'var(--sam-line)' : 'transparent',
+                );
+            }
+            render();
+            if (globalThis.Tweak) {
+                const tweak = new Tweak({ container: root, onChange: render });
+                tweak.addSlider(design, 'radius', {
+                    label: 'Lengkungan kartu',
+                    min: 6,
+                    max: 28,
+                    step: 2,
+                    unit: 'px',
+                });
+                tweak.addSlider(design, 'spacing', {
+                    label: 'Ruang dalam kartu',
+                    min: 12,
+                    max: 24,
+                    step: 2,
+                    unit: 'px',
+                });
+                tweak.addToggle(design, 'outline', {
+                    label: 'Garis tepi kartu',
+                });
+            }
+        })();
+    </script>
+</div>
