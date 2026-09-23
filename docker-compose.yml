@@ -34,13 +34,12 @@ services:
     worker:
         image: ${COMPOSE_PROJECT_NAME:-pm-internal}-dev:local
         build: *app-build
-        profiles: ['notifications']
         working_dir: /var/www/html
         volumes:
             - .:/var/www/html
         environment:
             DB_HOST: postgres
-        command: php artisan queue:work --queue=emails --sleep=3 --tries=3 --timeout=60
+        command: php artisan queue:work --queue=emails --sleep=1 --tries=3 --timeout=60
         restart: unless-stopped
         depends_on:
             postgres:
