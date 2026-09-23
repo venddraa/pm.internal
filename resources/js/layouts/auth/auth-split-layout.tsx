@@ -20,7 +20,7 @@ export default function AuthSplitLayout({
                         IT Planning & Governance Department
                     </p>
                     <h1 className="sam-auth-headline">
-                        Saya Akan<span>Lawan!</span>
+                        Saya Akan<span>Monitor!</span>
                     </h1>
                     <div className="sam-auth-fields">
                         <h2 className="text-xl font-semibold">{title}</h2>

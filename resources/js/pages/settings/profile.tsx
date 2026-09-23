@@ -23,9 +23,13 @@ export default function Profile(
     {
         mustVerifyEmail,
         status,
+        notificationEmail,
+        workEmailReady,
     }: {
         mustVerifyEmail: boolean;
         status?: string;
+        notificationEmail: string | null;
+        workEmailReady: boolean;
     },
     /* @end-chisel-email-verification */
 ) {
@@ -124,6 +128,35 @@ export default function Profile(
                                     </div>
                                 )}
                             {/* @end-chisel-email-verification */}
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="notification_email">
+                                    Email notifikasi (opsional)
+                                </Label>
+                                <Input
+                                    id="notification_email"
+                                    name="notification_email"
+                                    type="email"
+                                    defaultValue={notificationEmail ?? ''}
+                                    placeholder="nama@gmail.com"
+                                    autoComplete="email"
+                                />
+                                <p className="text-muted-foreground text-sm">
+                                    Alamat penerima pemberitahuan tugas dan
+                                    undangan proyek, terpisah dari akun login.
+                                    Kosongkan untuk berhenti menerima email.
+                                </p>
+                                {!workEmailReady && (
+                                    <p className="text-muted-foreground text-sm">
+                                        Pengiriman email masih dalam tahap uji
+                                        terbatas. Hubungi pengelola untuk
+                                        mengaktifkan alamatmu.
+                                    </p>
+                                )}
+                                <InputError
+                                    message={errors.notification_email}
+                                />
+                            </div>
 
                             <div className="flex items-center gap-4">
                                 <Button

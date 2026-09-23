@@ -147,22 +147,17 @@ export function AppSidebar() {
             <SidebarHeader className="h-20 justify-center px-3 py-3">
                 <Link
                     href="/home"
-                    className="flex min-w-0 items-center gap-2 group-data-[collapsible=icon]:justify-center"
+                    className="flex min-w-0 items-center justify-center gap-2"
                 >
                     <BrandLogo
                         white
-                        className="w-[112px] shrink-0 group-data-[collapsible=icon]:hidden"
+                        className="w-40 shrink-0 group-data-[collapsible=icon]:hidden"
                     />
                     <span
                         className="sam-brand-symbol hidden size-8 shrink-0 bg-white group-data-[collapsible=icon]:block"
                         aria-label="Jasa Marga"
                         role="img"
                     />
-                    <span className="border-sidebar-border text-foreground min-w-0 border-l pl-2 text-[13px] leading-tight font-semibold group-data-[collapsible=icon]:hidden">
-                        Saya Akan
-                        <br />
-                        Monitor
-                    </span>
                 </Link>
             </SidebarHeader>
             <SidebarContent className="sam-scrollbar gap-0 px-2 py-2">

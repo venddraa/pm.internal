@@ -24,6 +24,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property string|null $notification_email
  * @property GlobalUserRole $role
  * @property bool $is_active
  * @property string|null $avatar_path
@@ -41,7 +42,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property-read Collection<int, Task> $assignedTasks
  * @property-read Collection<int, Comment> $comments
  */
-#[Fillable(['name', 'email', 'password', 'role', 'is_active', 'avatar_path', 'email_verified_at'])]
+#[Fillable(['name', 'email', 'password', 'role', 'is_active', 'avatar_path', 'email_verified_at', 'notification_email'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -90,6 +91,14 @@ class User extends Authenticatable implements PasskeyUser
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class, 'author_id');
+    }
+
+    public function canReceiveWorkEmail(): bool
+    {
+        return $this->is_active
+            && config('work_notifications.email_enabled')
+            && filled($this->notification_email)
+            && in_array(strtolower((string) $this->notification_email), config('work_notifications.allowed_recipients', []), true);
     }
 
     public function isAdmin(): bool

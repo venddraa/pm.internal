@@ -169,7 +169,7 @@ export function AppSidebarHeader() {
                         </>
                     ) : (
                         <span className="text-foreground truncate font-medium">
-                            Saya Akan Monitor
+                            IT Planning & Governance
                         </span>
                     )}
                 </div>

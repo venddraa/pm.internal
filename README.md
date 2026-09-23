@@ -162,6 +162,10 @@ docker compose run --rm --no-deps app npm run build
 
 Panduan membuat repository **pm-internal**, push pertama, mengundang Adit, dan alur branch/PR ada di [docs/github.md](docs/github.md). Workflow GitHub Actions menjalankan pemeriksaan frontend/backend melalui image Docker yang sama pada pull request dan push ke `main`.
 
+## Notifikasi email
+
+Email untuk penugasan tugas dan penambahan anggota proyek sudah tersedia dengan antrean pengiriman, email penerima terpisah dari login, dan allowlist untuk pilot. Pengiriman default nonaktif sampai SMTP dikonfigurasi. Lihat [panduan aktivasi Gmail dan rencana tahap berikutnya](docs/email-notifications.md).
+
 ## Konfigurasi environment
 
 Nilai penting tersedia di `.env.example`:
@@ -220,7 +224,7 @@ Pastikan user proses web dapat menulis ke `storage/` dan `bootstrap/cache/`, tet
 
 Jika aplikasi berada di belakang reverse proxy/load balancer, konfigurasikan `trustProxies` di `bootstrap/app.php` hanya untuk alamat proxy internal yang diketahui agar scheme HTTPS dan IP klien tidak dapat dipalsukan. Jangan memakai wildcard proxy pada jaringan yang tidak sepenuhnya dipercaya.
 
-Notifikasi V1 menggunakan database dan operasi sinkron. `QUEUE_CONNECTION=database` telah siap untuk pekerjaan asynchronous mendatang; jika job queued mulai digunakan, jalankan worker di bawah systemd/Supervisor dan gunakan `php artisan queue:restart` saat release.
+Inbox menggunakan notifikasi database yang langsung tersimpan; email pekerjaan dikirim melalui antrean `emails` saat diaktifkan. Jalankan worker dengan pemantauan proses dan restart saat release; konfigurasi Docker development serta prosedur aktivasi ada di [panduan email](docs/email-notifications.md).
 
 ## Catatan autentikasi masa depan
 

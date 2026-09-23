@@ -17,6 +17,9 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return $this->profileRules($this->user()->id);
+        return [
+            ...$this->profileRules($this->user()->id),
+            'notification_email' => ['sometimes', 'nullable', 'string', 'email:rfc', 'max:255', 'regex:/^[^@\s]+@[^@\s]+\.[^@\s]+$/'],
+        ];
     }
 }

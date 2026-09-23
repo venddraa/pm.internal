@@ -38,20 +38,20 @@ export default function Login({ status, canResetPassword }: Props) {
                                     required
                                     autoFocus
                                     autoComplete="email"
-                                    placeholder="name@jasamarga.co.id"
+                                    placeholder="name@department"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Kata sandi</Label>
+                                    <Label htmlFor="password">Password</Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
                                             className="ml-auto text-sm"
                                         >
-                                            Lupa kata sandi?
+                                            Lupa password?
                                         </TextLink>
                                     )}
                                 </div>
@@ -61,7 +61,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     className="h-16 rounded-xl px-4 text-base"
                                     required
                                     autoComplete="current-password"
-                                    placeholder="Kata sandi"
+                                    placeholder="Password"
                                 />
                                 <InputError message={errors.password} />
                             </div>
