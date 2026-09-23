@@ -29,6 +29,7 @@ class UserController extends Controller
         ]);
 
         $users = User::query()
+            ->whereNull('removed_at')
             ->when($filters['search'] ?? null, function (Builder $query, string $search): void {
                 $term = '%'.mb_strtolower($search).'%';
                 $query->where(fn (Builder $query) => $query
@@ -43,6 +44,14 @@ class UserController extends Controller
             ->through(fn (User $user) => [
                 ...InertiaData::user($user),
                 'created_at' => $user->created_at?->toIso8601String(),
+                'can_delete' => ! $user->is($request->user())
+                    && ! ($user->role === GlobalUserRole::Admin
+                        && $user->is_active
+                        && User::query()
+                            ->whereNull('removed_at')
+                            ->where('role', GlobalUserRole::Admin->value)
+                            ->where('is_active', true)
+                            ->count() <= 1),
             ]);
 
         return Inertia::render('admin/users/index', [
@@ -86,5 +95,40 @@ class UserController extends Controller
         ])));
 
         return back()->with('success', 'Pengguna berhasil diperbarui.');
+    }
+
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        if ($user->is($request->user())) {
+            throw ValidationException::withMessages([
+                'user' => 'Kamu tidak dapat menghapus akun sendiri.',
+            ]);
+        }
+
+        if ($user->role === GlobalUserRole::Admin
+            && $user->is_active
+            && User::query()
+                ->whereNull('removed_at')
+                ->where('role', GlobalUserRole::Admin->value)
+                ->where('is_active', true)
+                ->count() <= 1) {
+            throw ValidationException::withMessages([
+                'user' => 'Sedikitnya satu administrator harus tetap aktif.',
+            ]);
+        }
+
+        DB::transaction(function () use ($user): void {
+            $user->forceFill([
+                'is_active' => false,
+                'removed_at' => now(),
+                'remember_token' => null,
+            ])->save();
+
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+        });
+
+        return back()->with('success', 'Akun berhasil dihapus. Riwayat pekerjaan tetap tersimpan.');
     }
 }

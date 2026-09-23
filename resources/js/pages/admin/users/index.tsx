@@ -4,6 +4,7 @@ import {
     Plus,
     Search,
     ShieldCheck,
+    Trash2,
     UserCheck,
     UserRoundX,
 } from 'lucide-react';
@@ -15,6 +16,7 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -39,7 +41,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { formatDate } from '@/lib/format';
 import type { Option, Paginated, User } from '@/types';
 
-type ManagedUser = User & { created_at: string };
+type ManagedUser = User & { created_at: string; can_delete: boolean };
 
 type Props = {
     users: Paginated<ManagedUser>;
@@ -50,6 +52,7 @@ type Props = {
 export default function AdminUsersIndex({ users, filters, roles }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [editing, setEditing] = useState<ManagedUser | null>(null);
+    const [deleting, setDeleting] = useState<ManagedUser | null>(null);
     const navigate = (key: string, value: string) =>
         router.get(
             '/administration/users',
@@ -226,6 +229,20 @@ export default function AdminUsersIndex({ users, filters, roles }: Props) {
                                                 </>
                                             )}
                                         </DropdownMenuItem>
+                                        {user.can_delete && (
+                                            <>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    className="text-destructive"
+                                                    onClick={() =>
+                                                        setDeleting(user)
+                                                    }
+                                                >
+                                                    <Trash2 className="size-3.5" />
+                                                    Hapus akun
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
@@ -255,7 +272,77 @@ export default function AdminUsersIndex({ users, filters, roles }: Props) {
                     }}
                 />
             )}
+            {deleting && (
+                <DeleteUserDialog
+                    user={deleting}
+                    open
+                    onOpenChange={(open) => {
+                        if (!open) setDeleting(null);
+                    }}
+                />
+            )}
         </>
+    );
+}
+
+function DeleteUserDialog({
+    user,
+    open,
+    onOpenChange,
+}: {
+    user: ManagedUser;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}) {
+    const [processing, setProcessing] = useState(false);
+
+    const destroy = () => {
+        setProcessing(true);
+        router.delete(`/administration/users/${user.id}`, {
+            preserveScroll: true,
+            onSuccess: () => onOpenChange(false),
+            onFinish: () => setProcessing(false),
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[460px]">
+                <DialogHeader>
+                    <DialogTitle>Hapus akun {user.name}?</DialogTitle>
+                    <DialogDescription>
+                        Akun tidak dapat login dan hilang dari daftar pengguna.
+                        Proyek, tugas, komentar, dan riwayat pekerjaan tetap
+                        tersimpan.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="bg-muted/40 rounded-xl border p-3 text-sm">
+                    <p className="font-medium">{user.name}</p>
+                    <p className="text-muted-foreground text-xs">
+                        {user.email}
+                    </p>
+                </div>
+                <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        disabled={processing}
+                    >
+                        Batal
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={destroy}
+                        disabled={processing}
+                    >
+                        {processing && <Spinner />}
+                        Hapus akun
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }
 

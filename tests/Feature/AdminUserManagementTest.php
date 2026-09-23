@@ -64,6 +64,41 @@ class AdminUserManagementTest extends TestCase
         ])->assertForbidden();
 
         $this->actingAs($member)->patch(route('admin.users.update', $target), ['is_active' => false])->assertForbidden();
+        $this->actingAs($member)->delete(route('admin.users.destroy', $target))->assertForbidden();
+    }
+
+    public function test_admin_can_remove_account_without_deleting_work_history(): void
+    {
+        $admin = $this->makeUser(GlobalUserRole::Admin);
+        $user = $this->makeUser();
+        $project = $this->makeProject($user);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.users.destroy', $user))
+            ->assertSessionHasNoErrors();
+
+        $user->refresh();
+        $this->assertFalse($user->is_active);
+        $this->assertNotNull($user->removed_at);
+        $this->assertNotNull($project->fresh());
+        $this->assertTrue($project->fresh()->owner->is($user));
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertInertia(fn ($page) => $page
+                ->component('admin/users/index')
+                ->where('users.data', fn ($users) => collect($users)->doesntContain('id', $user->id)));
+    }
+
+    public function test_admin_cannot_remove_self(): void
+    {
+        $admin = $this->makeUser(GlobalUserRole::Admin);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.users.destroy', $admin))
+            ->assertSessionHasErrors('user');
+
+        $this->assertNull($admin->fresh()->removed_at);
     }
 
     public function test_last_active_administrator_cannot_be_deactivated(): void

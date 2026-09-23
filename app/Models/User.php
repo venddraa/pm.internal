@@ -29,6 +29,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property bool $is_active
  * @property string|null $avatar_path
  * @property Carbon|null $email_verified_at
+ * @property Carbon|null $removed_at
  * @property string $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
@@ -42,7 +43,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property-read Collection<int, Task> $assignedTasks
  * @property-read Collection<int, Comment> $comments
  */
-#[Fillable(['name', 'email', 'password', 'role', 'is_active', 'avatar_path', 'email_verified_at', 'notification_email'])]
+#[Fillable(['name', 'email', 'password', 'role', 'is_active', 'avatar_path', 'email_verified_at', 'notification_email', 'removed_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -58,6 +59,7 @@ class User extends Authenticatable implements PasskeyUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'removed_at' => 'datetime',
             'password' => 'hashed',
             'role' => GlobalUserRole::class,
             'is_active' => 'boolean',
