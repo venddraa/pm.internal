@@ -7,7 +7,7 @@ const copy: Record<number, { title: string; description: string }> = {
     403: {
         title: 'Akses ditolak',
         description:
-            'Kamu tidak memiliki izin untuk mengakses proyek atau melakukan tindakan ini.',
+            'Kamu tidak memiliki izin untuk mengakses pekerjaan atau melakukan tindakan ini.',
     },
     404: {
         title: 'Halaman tidak ditemukan',

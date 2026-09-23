@@ -33,6 +33,9 @@ class ProjectService
                 'created_by' => $actor->id,
                 'status' => ProjectStatus::Planning,
                 'health' => ProjectHealth::OnTrack,
+                'progress_mode' => $data['progress_mode'] ?? 'checklist',
+                'target_value' => $data['target_value'] ?? null,
+                'progress_unit' => $data['progress_unit'] ?? null,
             ]);
 
             $project->members()->attach($data['owner_id'], [
@@ -47,7 +50,7 @@ class ProjectService
             }
 
             $this->activity->record($actor, $project, $project, 'project.created', [
-                'description' => "{$actor->name} membuat proyek {$project->name}.",
+                'description' => "{$actor->name} membuat pekerjaan {$project->name}.",
             ]);
 
             return $project->load(['owner', 'members', 'statuses']);

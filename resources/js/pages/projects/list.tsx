@@ -3,6 +3,7 @@ import { ChevronDown, ListTodo } from 'lucide-react';
 import * as React from 'react';
 import { Pagination } from '@/components/app/pagination';
 import { ProjectPage } from '@/components/projects/project-page';
+import { WorkProgressPanel } from '@/components/projects/work-progress-panel';
 import { CreateTaskDialog } from '@/components/tasks/create-task-dialog';
 import { QuickTaskInput } from '@/components/tasks/quick-task-input';
 import { TaskDetailSheet } from '@/components/tasks/task-detail-sheet';
@@ -14,6 +15,7 @@ import type {
     Option,
     Paginated,
     Project,
+    ProgressItem,
     Task,
     TaskDetail,
     User,
@@ -29,6 +31,7 @@ type Props = {
     filters: Record<string, string | number | undefined>;
     selectedTask: TaskDetail | null;
     priorityOptions: Option[];
+    progressItems: ProgressItem[];
     permissions: { createTask: boolean; updateProject: boolean };
 };
 
@@ -41,31 +44,33 @@ export default function ProjectList({
     filters,
     selectedTask,
     priorityOptions,
+    progressItems,
     permissions,
 }: Props) {
-    const grouped = new Map(
-        statuses.map((status) => [
-            status.id,
-            tasks.data.filter((task) => task.status_id === status.id),
-        ]),
-    );
+    const workflowGroups = [
+        { key: 'todo', label: 'Belum mulai', color: '#64748b' },
+        { key: 'in_progress', label: 'Dikerjakan', color: '#2563eb' },
+        { key: 'done', label: 'Selesai', color: '#16a34a' },
+    ] as const;
 
     const storageKey = `collapsed-statuses-${project.key}`;
 
-    const [collapsed, setCollapsed] = React.useState<Record<number, boolean>>(
+    const [collapsed, setCollapsed] = React.useState<Record<string, boolean>>(
         () => {
             try {
                 const stored = sessionStorage.getItem(storageKey);
-                return stored ? (JSON.parse(stored) as Record<number, boolean>) : {};
+                return stored
+                    ? (JSON.parse(stored) as Record<string, boolean>)
+                    : {};
             } catch {
                 return {};
             }
         },
     );
 
-    const toggleStatus = (statusId: number) => {
+    const toggleStatus = (status: string) => {
         setCollapsed((prev) => {
-            const next = { ...prev, [statusId]: !prev[statusId] };
+            const next = { ...prev, [status]: !prev[status] };
             try {
                 sessionStorage.setItem(storageKey, JSON.stringify(next));
             } catch {
@@ -77,9 +82,10 @@ export default function ProjectList({
 
     return (
         <>
-            <Head title={`${project.key} Daftar`} />
+            <Head title={project.name} />
             <ProjectPage
                 project={project}
+                canManage={permissions.updateProject}
                 actions={
                     permissions.createTask ? (
                         <CreateTaskDialog
@@ -93,14 +99,29 @@ export default function ProjectList({
                 }
             >
                 <div className="flex h-full min-h-0 flex-col overflow-hidden">
-                    <TaskToolbar
-                        filters={filters}
-                        statuses={statuses}
-                        members={members}
-                        labels={labels}
-                        priorityOptions={priorityOptions}
-                    />
                     <div className="sam-scrollbar min-h-0 flex-1 overflow-auto">
+                        <WorkProgressPanel
+                            project={project}
+                            items={progressItems}
+                            members={members}
+                            canEdit={permissions.updateProject}
+                        />
+                        <div className="bg-card border-b px-5 py-4">
+                            <h2 className="text-base font-semibold">
+                                Yang harus dikerjakan
+                            </h2>
+                            <p className="text-muted-foreground mt-1 text-xs">
+                                Daftar tindakan tim. Ubah status atau centang
+                                saat sudah selesai.
+                            </p>
+                        </div>
+                        <TaskToolbar
+                            filters={filters}
+                            statuses={statuses}
+                            members={members}
+                            labels={labels}
+                            priorityOptions={priorityOptions}
+                        />
                         {tasks.total === 0 ? (
                             <div className="mx-auto flex max-w-xl flex-col items-center px-6 py-12 text-center">
                                 <ListTodo className="text-primary mb-4 size-9" />
@@ -111,8 +132,8 @@ export default function ProjectList({
                                 </h2>
                                 <p className="text-muted-foreground mt-3 text-sm leading-6">
                                     {Object.values(filters).some(Boolean)
-                                        ? 'Sesuaikan filter atau tampilkan semua tugas dalam proyek.'
-                                        : 'Tambahkan anggota proyek, buat tugas, lalu pilih penanggung jawab. Tugas akan muncul di Tugas Saya milik orang tersebut.'}
+                                        ? 'Sesuaikan filter atau tampilkan semua tugas dalam pekerjaan.'
+                                        : 'Buat tugas lalu pilih penanggung jawab. Tugas akan muncul di Tugas Saya milik orang tersebut.'}
                                 </p>
                                 <div className="mt-6 flex flex-wrap justify-center gap-3">
                                     {Object.values(filters).some(Boolean) && (
@@ -129,7 +150,7 @@ export default function ProjectList({
                                             <Link
                                                 href={`/projects/${project.key}/settings`}
                                             >
-                                                Kelola anggota
+                                                Pengaturan pekerjaan
                                             </Link>
                                         </Button>
                                     )}
@@ -159,23 +180,36 @@ export default function ProjectList({
                                     </span>
                                     <span />
                                 </div>
-                                {statuses.map((status) => {
-                                    const groupTasks =
-                                        grouped.get(status.id) ?? [];
-                                    const isCollapsed = !!collapsed[status.id];
+                                {workflowGroups.map((group) => {
+                                    const groupTasks = tasks.data.filter(
+                                        (task) =>
+                                            task.status.category === group.key,
+                                    );
+                                    const quickStatus =
+                                        statuses.find(
+                                            (status) =>
+                                                status.category === group.key &&
+                                                status.name !== 'BACKLOG' &&
+                                                status.name !== 'REVIEW',
+                                        ) ??
+                                        statuses.find(
+                                            (status) =>
+                                                status.category === group.key,
+                                        );
+                                    const isCollapsed = !!collapsed[group.key];
                                     return (
                                         <section
-                                            key={status.id}
-                                            aria-labelledby={`status-${status.id}`}
+                                            key={group.key}
+                                            aria-labelledby={`status-${group.key}`}
                                         >
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    toggleStatus(status.id)
+                                                    toggleStatus(group.key)
                                                 }
                                                 className="bg-background/95 hover:bg-muted/40 sticky top-11 z-[1] flex h-9 w-full cursor-pointer items-center gap-2 border-t border-b px-3 text-left backdrop-blur transition-colors"
                                                 aria-expanded={!isCollapsed}
-                                                aria-controls={`group-${status.id}`}
+                                                aria-controls={`group-${group.key}`}
                                             >
                                                 <ChevronDown
                                                     className="text-muted-foreground size-3.5 shrink-0 transition-transform duration-200"
@@ -189,22 +223,21 @@ export default function ProjectList({
                                                     className="size-2.5 shrink-0 rounded-full"
                                                     style={{
                                                         backgroundColor:
-                                                            status.color,
+                                                            group.color,
                                                     }}
                                                 />
                                                 <h2
-                                                    id={`status-${status.id}`}
+                                                    id={`status-${group.key}`}
                                                     className="text-[11px] font-semibold tracking-wide"
                                                 >
-                                                    {status.name}
+                                                    {group.label}
                                                 </h2>
                                                 <span className="bg-muted text-muted-foreground rounded-full px-1.5 text-[10px]">
-                                                    {status.task_count ??
-                                                        groupTasks.length}
+                                                    {groupTasks.length}
                                                 </span>
                                             </button>
                                             <div
-                                                id={`group-${status.id}`}
+                                                id={`group-${group.key}`}
                                                 hidden={isCollapsed}
                                             >
                                                 {groupTasks.map((task) => (
@@ -231,20 +264,26 @@ export default function ProjectList({
                                                         status ini.
                                                     </div>
                                                 )}
-                                                {permissions.createTask && (
-                                                    <QuickTaskInput
-                                                        projectKey={project.key}
-                                                        statusId={status.id}
-                                                    />
-                                                )}
+                                                {permissions.createTask &&
+                                                    quickStatus && (
+                                                        <QuickTaskInput
+                                                            projectKey={
+                                                                project.key
+                                                            }
+                                                            statusId={
+                                                                quickStatus.id
+                                                            }
+                                                        />
+                                                    )}
                                             </div>
                                         </section>
                                     );
                                 })}
                                 {statuses.length === 0 && (
                                     <div className="text-muted-foreground p-8 text-center text-sm">
-                                        Proyek ini belum memiliki status kerja.
-                                        Atur melalui Pengaturan Proyek.
+                                        Pekerjaan ini belum memiliki status
+                                        kerja. Atur melalui Pengaturan
+                                        Pekerjaan.
                                     </div>
                                 )}
                             </div>

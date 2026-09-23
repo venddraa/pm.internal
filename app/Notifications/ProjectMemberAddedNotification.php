@@ -26,7 +26,7 @@ class ProjectMemberAddedNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'Ditambahkan ke proyek',
+            'title' => 'Ditambahkan ke pekerjaan',
             'message' => "{$this->actor->name} menambahkan kamu ke {$this->project->name}.",
             'project_key' => $this->project->key,
             'url' => route('projects.overview', $this->project, false),

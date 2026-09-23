@@ -13,8 +13,8 @@ enum ProjectStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Planning => 'Perencanaan',
-            self::Active => 'Aktif',
+            self::Planning => 'Belum Dimulai',
+            self::Active => 'Dikerjakan',
             self::OnHold => 'Ditunda',
             self::Completed => 'Selesai',
             self::Archived => 'Diarsipkan',

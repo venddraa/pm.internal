@@ -39,7 +39,7 @@ export default function Search({
                                 <div className="flex items-center gap-2 border-b px-4 py-3">
                                     <FolderKanban className="text-muted-foreground size-4" />
                                     <h2 className="text-sm font-semibold">
-                                        Proyek
+                                        Pekerjaan
                                     </h2>
                                     <span className="text-muted-foreground text-xs">
                                         {projects.length}
@@ -64,7 +64,7 @@ export default function Search({
                                 ))}
                                 {projects.length === 0 && (
                                     <p className="text-muted-foreground px-4 py-5 text-xs">
-                                        Tidak ada proyek yang cocok.
+                                        Tidak ada pekerjaan yang cocok.
                                     </p>
                                 )}
                             </section>

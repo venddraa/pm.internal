@@ -24,6 +24,8 @@ export default function Home({
     taskSections,
     projects,
     summary,
+    managerView,
+    teamSummary,
 }: {
     taskSections: Record<Section, Task[]>;
     projects: Project[];
@@ -33,6 +35,13 @@ export default function Home({
         today: number;
         upcoming: number;
         no_date: number;
+    };
+    managerView: boolean;
+    teamSummary: {
+        works: number;
+        open: number;
+        overdue: number;
+        attention: number;
     };
 }) {
     const { auth, navigation } = usePage().props;
@@ -44,13 +53,17 @@ export default function Home({
                     <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                         <div>
                             <p className="text-muted-foreground text-sm">
-                                Ruang kerja saya
+                                {managerView
+                                    ? 'Ringkasan departemen'
+                                    : 'Ruang kerja saya'}
                             </p>
                             <h1 className="mt-1 text-2xl font-semibold tracking-tight">
                                 Halo, {auth.user?.name.split(' ')[0]}.
                             </h1>
                             <p className="text-muted-foreground mt-2 text-sm">
-                                Temukan pekerjaanmu dan lanjutkan bersama tim.
+                                {managerView
+                                    ? 'Pantau progres tim dan pekerjaan yang perlu perhatian.'
+                                    : 'Lihat apa yang harus kamu kerjakan hari ini.'}
                             </p>
                         </div>
                         <Button asChild>
@@ -63,34 +76,64 @@ export default function Home({
                             >
                                 <FolderPlus className="size-4" />
                                 {navigation.can_create_project
-                                    ? 'Buat proyek'
-                                    : 'Lihat proyek tim'}
+                                    ? 'Buat pekerjaan'
+                                    : 'Lihat pekerjaan tim'}
                             </Link>
                         </Button>
                     </div>
-                    <div className="mb-6 grid gap-3 sm:grid-cols-3">
-                        {[
-                            {
-                                label: 'Tugas saya belum selesai',
-                                value: summary.open,
-                                href: '/my-tasks',
-                                main: true,
-                            },
-                            {
-                                label: 'Perlu perhatian · terlambat',
-                                value: summary.overdue,
-                                href: '/my-tasks?state=overdue',
-                                main: false,
-                            },
-                            {
-                                label: 'Jatuh tempo hari ini',
-                                value: summary.today,
-                                href: '/my-tasks?state=today',
-                                main: false,
-                            },
-                        ].map((item) => (
+                    <div
+                        className={`mb-6 grid gap-3 ${managerView ? 'sm:grid-cols-2 xl:grid-cols-4' : 'sm:grid-cols-3'}`}
+                    >
+                        {(managerView
+                            ? [
+                                  {
+                                      label: 'Pekerjaan aktif',
+                                      value: teamSummary.works,
+                                      href: '/projects',
+                                      main: true,
+                                  },
+                                  {
+                                      label: 'Tugas tim terbuka',
+                                      value: teamSummary.open,
+                                      href: '/projects',
+                                      main: false,
+                                  },
+                                  {
+                                      label: 'Tugas tim terlambat',
+                                      value: teamSummary.overdue,
+                                      href: '/projects',
+                                      main: false,
+                                  },
+                                  {
+                                      label: 'Perlu perhatian',
+                                      value: teamSummary.attention,
+                                      href: '/projects?health=at_risk',
+                                      main: false,
+                                  },
+                              ]
+                            : [
+                                  {
+                                      label: 'Tugas saya belum selesai',
+                                      value: summary.open,
+                                      href: '/my-tasks',
+                                      main: true,
+                                  },
+                                  {
+                                      label: 'Perlu perhatian · terlambat',
+                                      value: summary.overdue,
+                                      href: '/my-tasks?state=overdue',
+                                      main: false,
+                                  },
+                                  {
+                                      label: 'Jatuh tempo hari ini',
+                                      value: summary.today,
+                                      href: '/my-tasks?state=today',
+                                      main: false,
+                                  },
+                              ]
+                        ).map((item) => (
                             <Link
-                                key={item.href}
+                                key={item.label}
                                 href={item.href}
                                 className={`group flex items-center justify-between rounded-2xl border p-5 transition-shadow hover:shadow-md ${item.main ? 'border-primary bg-primary text-primary-foreground' : 'bg-card border-border/60'}`}
                             >
@@ -138,8 +181,8 @@ export default function Home({
                                     <p className="text-muted-foreground mx-auto mt-2 max-w-sm text-sm">
                                         Tugas yang ditugaskan kepadamu akan
                                         muncul di sini. Kamu juga bisa membuka
-                                        proyek tim untuk melihat pekerjaan
-                                        lainnya.
+                                        pekerjaan tim untuk melihat daftar
+                                        lengkap.
                                     </p>
                                     <Button
                                         variant="outline"
@@ -147,7 +190,7 @@ export default function Home({
                                         className="mt-5"
                                     >
                                         <Link href="/projects">
-                                            Buka proyek tim
+                                            Buka pekerjaan tim
                                         </Link>
                                     </Button>
                                 </div>
@@ -186,13 +229,13 @@ export default function Home({
                         <section className="bg-card border-border/60 overflow-hidden rounded-2xl border">
                             <div className="flex items-center justify-between gap-2 p-5">
                                 <h2 className="text-base font-semibold">
-                                    Proyek tim
+                                    Pekerjaan tim
                                 </h2>
                                 <Link
                                     href="/projects"
                                     className="text-primary text-sm font-medium"
                                 >
-                                    Semua proyek
+                                    Semua pekerjaan
                                 </Link>
                             </div>
                             {projects.map((project) => (
@@ -208,9 +251,11 @@ export default function Home({
                                                 {project.name}
                                             </p>
                                             <p className="text-muted-foreground mt-1 text-xs">
-                                                {project.progress.open} tugas
-                                                belum selesai ·{' '}
-                                                {project.member_count} anggota
+                                                {project.progress_mode ===
+                                                'numeric'
+                                                    ? `${project.progress.completed}/${project.progress.total} ${project.progress_unit ?? 'item'}`
+                                                    : `${project.progress.open} tugas belum selesai`}{' '}
+                                                · {project.member_count} anggota
                                             </p>
                                         </div>
                                         <ArrowRight className="text-muted-foreground size-4" />
@@ -227,8 +272,7 @@ export default function Home({
                             ))}
                             {projects.length === 0 && (
                                 <p className="text-muted-foreground border-t p-5 text-sm">
-                                    Belum ada proyek aktif. Buka daftar proyek
-                                    untuk melihat proyek lainnya.
+                                    Belum ada pekerjaan aktif.
                                 </p>
                             )}
                             {navigation.can_create_project && (
@@ -240,7 +284,7 @@ export default function Home({
                                     >
                                         <Link href="/projects?create=1">
                                             <Plus className="size-4" />
-                                            Buat proyek baru
+                                            Buat pekerjaan baru
                                         </Link>
                                     </Button>
                                 </div>

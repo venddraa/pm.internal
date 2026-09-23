@@ -15,16 +15,20 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        return $user->is_active && $project->members()->whereKey($user->id)->exists();
+        return $user->is_active;
     }
 
     public function create(User $user): bool
     {
-        return $user->is_active && $user->isAdmin();
+        return $user->is_active && ($user->isAdmin() || $user->isManager());
     }
 
     public function update(User $user, Project $project): bool
     {
+        if ($user->is_active && $user->isManager()) {
+            return true;
+        }
+
         return $this->hasRole($user, $project, [
             ProjectMemberRole::Owner,
             ProjectMemberRole::Manager,
@@ -43,6 +47,10 @@ class ProjectPolicy
 
     public function manageMembers(User $user, Project $project): bool
     {
+        if ($user->is_active && $user->isManager()) {
+            return true;
+        }
+
         return $this->hasRole($user, $project, [
             ProjectMemberRole::Owner,
             ProjectMemberRole::Manager,

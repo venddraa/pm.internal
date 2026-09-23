@@ -7,15 +7,21 @@ export function ProjectPage({
     actions,
     children,
     className = '',
+    canManage = false,
 }: {
     project: Project;
     actions?: ReactNode;
     children: ReactNode;
     className?: string;
+    canManage?: boolean;
 }) {
     return (
         <div className="flex min-h-0 flex-1 flex-col">
-            <ProjectHeader project={project} actions={actions} />
+            <ProjectHeader
+                project={project}
+                actions={actions}
+                canManage={canManage}
+            />
             <div className={`min-h-0 flex-1 ${className}`}>{children}</div>
         </div>
     );

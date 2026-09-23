@@ -50,12 +50,12 @@ export default function ProjectSettings(props: Props) {
     return (
         <>
             <Head title={`${props.project.key} Pengaturan`} />
-            <ProjectPage project={props.project}>
+            <ProjectPage project={props.project} canManage>
                 <div className="sam-scrollbar h-full overflow-y-auto p-4 md:p-6">
                     <div className="bg-card border-border/60 mx-auto max-w-4xl overflow-hidden rounded-2xl border shadow-sm">
                         <div className="border-b px-5 pt-4">
                             <h2 className="text-base font-semibold">
-                                Pengaturan proyek
+                                Pengaturan pekerjaan
                             </h2>
                             <nav className="mt-3 flex gap-1">
                                 {tabs.map((item) => (
@@ -103,6 +103,11 @@ function GeneralSettings({
         health: project.health,
         start_date: project.start_date ?? '',
         due_date: project.due_date ?? '',
+        progress_mode: project.progress_mode,
+        target_value: project.target_value ? String(project.target_value) : '',
+        progress_unit: project.progress_unit ?? '',
+        blockers: project.blockers ?? '',
+        next_steps: project.next_steps ?? '',
     });
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -111,13 +116,21 @@ function GeneralSettings({
             owner_id: Number(data.owner_id),
             start_date: data.start_date || null,
             due_date: data.due_date || null,
+            target_value:
+                data.progress_mode === 'numeric' && data.target_value
+                    ? Number(data.target_value)
+                    : null,
+            progress_unit:
+                data.progress_mode === 'numeric'
+                    ? data.progress_unit || null
+                    : null,
         }));
         form.patch(`/projects/${project.key}`);
     };
     return (
         <form onSubmit={submit} className="grid gap-5 p-5">
             <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-                <Field label="Nama proyek" error={form.errors.name}>
+                <Field label="Nama pekerjaan" error={form.errors.name}>
                     <Input
                         value={form.data.name}
                         onChange={(event) =>
@@ -125,7 +138,7 @@ function GeneralSettings({
                         }
                     />
                 </Field>
-                <Field label="Kode proyek" error={form.errors.key}>
+                <Field label="Kode pekerjaan" error={form.errors.key}>
                     <Input
                         className="font-mono uppercase"
                         value={form.data.key}
@@ -150,7 +163,7 @@ function GeneralSettings({
                 />
             </Field>
             <div className="grid gap-4 sm:grid-cols-3">
-                <Field label="Pemilik proyek" error={form.errors.owner_id}>
+                <Field label="PIC utama" error={form.errors.owner_id}>
                     <Select
                         value={form.data.owner_id}
                         onValueChange={(value) =>
@@ -172,7 +185,7 @@ function GeneralSettings({
                         </SelectContent>
                     </Select>
                 </Field>
-                <Field label="Status proyek" error={form.errors.status}>
+                <Field label="Status pekerjaan" error={form.errors.status}>
                     <Select
                         value={form.data.status}
                         onValueChange={(value) =>
@@ -222,6 +235,66 @@ function GeneralSettings({
                         </SelectContent>
                     </Select>
                 </Field>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+                <Field
+                    label="Cara menghitung progres"
+                    error={form.errors.progress_mode}
+                >
+                    <Select
+                        value={form.data.progress_mode}
+                        onValueChange={(value) =>
+                            form.setData(
+                                'progress_mode',
+                                value as typeof form.data.progress_mode,
+                            )
+                        }
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="checklist">
+                                Checklist tugas
+                            </SelectItem>
+                            <SelectItem value="numeric">
+                                Target angka / lokasi
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </Field>
+                {form.data.progress_mode === 'numeric' && (
+                    <>
+                        <Field
+                            label="Target total"
+                            error={form.errors.target_value}
+                        >
+                            <Input
+                                type="number"
+                                min="1"
+                                value={form.data.target_value}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'target_value',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        </Field>
+                        <Field label="Satuan" error={form.errors.progress_unit}>
+                            <Input
+                                value={form.data.progress_unit}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'progress_unit',
+                                        event.target.value,
+                                    )
+                                }
+                                placeholder="titik, lokasi, dokumen"
+                            />
+                        </Field>
+                    </>
+                )}
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Tanggal mulai" error={form.errors.start_date}>
@@ -286,10 +359,10 @@ function MemberSettings({
         <div className="p-5">
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <h3 className="text-sm font-semibold">Anggota proyek</h3>
+                    <h3 className="text-sm font-semibold">Tim pekerjaan</h3>
                     <p className="text-muted-foreground mt-1 text-xs">
-                        Atur akses proyek tanpa mengubah peran pengguna secara
-                        global.
+                        Atur pengelola pekerjaan tanpa mengubah peran pengguna
+                        secara global.
                     </p>
                 </div>
                 {permissions.manageMembers && candidates.length > 0 && (
@@ -302,9 +375,12 @@ function MemberSettings({
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md">
                             <DialogHeader>
-                                <DialogTitle>Tambah anggota proyek</DialogTitle>
+                                <DialogTitle>
+                                    Tambah anggota pekerjaan
+                                </DialogTitle>
                                 <DialogDescription>
-                                    Pilih pegawai aktif dan perannya di proyek.
+                                    Pilih pegawai aktif dan perannya pada
+                                    pekerjaan.
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={submit} className="grid gap-4">
@@ -330,7 +406,7 @@ function MemberSettings({
                                         </SelectContent>
                                     </Select>
                                 </Field>
-                                <Field label="Peran proyek">
+                                <Field label="Peran pekerjaan">
                                     <Select
                                         value={form.data.role}
                                         onValueChange={(value) =>
@@ -370,7 +446,7 @@ function MemberSettings({
             <div className="border-border/60 mt-5 overflow-hidden rounded-2xl border shadow-sm">
                 <div className="bg-muted/70 text-muted-foreground grid h-8 grid-cols-[minmax(240px,1fr)_150px_50px] items-center px-3 text-[10px] font-semibold tracking-wide uppercase">
                     <span>Pengguna</span>
-                    <span>Peran proyek</span>
+                    <span>Peran pekerjaan</span>
                     <span />
                 </div>
                 {members.map((member) => (
@@ -760,7 +836,7 @@ function LabelSettings({ project, labels, permissions }: Props) {
     };
     return (
         <div className="p-5">
-            <h3 className="text-sm font-semibold">Label proyek</h3>
+            <h3 className="text-sm font-semibold">Label pekerjaan</h3>
             <p className="text-muted-foreground mt-1 text-xs">
                 Gunakan label yang singkat dan konsisten untuk menyaring tugas.
             </p>
@@ -884,14 +960,14 @@ function ArchiveProject({ project }: { project: Project }) {
                     size="sm"
                     className="text-muted-foreground hover:text-destructive text-xs"
                 >
-                    Arsipkan proyek
+                    Arsipkan pekerjaan
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Arsipkan {project.name}?</DialogTitle>
                     <DialogDescription>
-                        Proyek dan seluruh riwayatnya tetap tersimpan, tetapi
+                        Pekerjaan dan seluruh riwayatnya tetap tersimpan, tetapi
                         tidak lagi tampil di navigasi aktif.
                     </DialogDescription>
                 </DialogHeader>
@@ -900,7 +976,7 @@ function ArchiveProject({ project }: { project: Project }) {
                     size="sm"
                     onClick={() => router.delete(`/projects/${project.key}`)}
                 >
-                    Arsipkan proyek
+                    Arsipkan pekerjaan
                 </Button>
             </DialogContent>
         </Dialog>
@@ -928,7 +1004,7 @@ function DeleteProject({ project }: { project: Project }) {
                     size="sm"
                     className="text-destructive hover:text-destructive text-xs"
                 >
-                    Hapus proyek
+                    Hapus pekerjaan
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg">
@@ -936,7 +1012,7 @@ function DeleteProject({ project }: { project: Project }) {
                     <DialogTitle>Hapus permanen {project.name}?</DialogTitle>
                     <DialogDescription>
                         Semua tugas, komentar, workflow, label, attachment, dan
-                        riwayat aktivitas proyek akan dihapus. Tindakan ini
+                        riwayat aktivitas pekerjaan akan dihapus. Tindakan ini
                         tidak dapat dibatalkan.
                     </DialogDescription>
                 </DialogHeader>
@@ -952,7 +1028,7 @@ function DeleteProject({ project }: { project: Project }) {
                             }
                             rows={4}
                             maxLength={1000}
-                            placeholder="Contoh: Proyek dummy untuk pengujian sudah tidak diperlukan."
+                            placeholder="Contoh: Pekerjaan dummy untuk pengujian sudah tidak diperlukan."
                             className="border-input bg-background min-h-24 w-full resize-y rounded-xl border px-3 py-2 text-sm"
                             required
                         />

@@ -55,7 +55,7 @@ class WorkflowSearchAndInboxTest extends TestCase
         $this->assertDatabaseMissing('labels', ['id' => $label->id]);
     }
 
-    public function test_global_search_finds_accessible_project_and_task_reference_only(): void
+    public function test_global_search_finds_department_work_for_every_member(): void
     {
         $owner = $this->makeUser();
         $outsider = $this->makeUser();
@@ -70,7 +70,9 @@ class WorkflowSearchAndInboxTest extends TestCase
                 ->where('tasks.0.reference', 'IRP-1'));
 
         $this->actingAs($outsider)->get(route('search', ['q' => $task->reference]))
-            ->assertInertia(fn (Assert $page) => $page->has('tasks', 0));
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('tasks', 1)
+                ->where('tasks.0.reference', 'IRP-1'));
     }
 
     public function test_assignment_creates_database_notification_and_inbox_can_mark_it_read(): void

@@ -75,8 +75,8 @@ export default function MyTasks({
                         Tugas Saya
                     </h1>
                     <p className="text-muted-foreground mt-2 text-sm">
-                        Semua tugas yang ditugaskan kepadamu, dari seluruh
-                        proyek. Centang untuk selesai atau klik judul untuk
+                        Semua yang menjadi tanggung jawabmu, dari seluruh
+                        pekerjaan. Centang untuk selesai atau klik judul untuk
                         detail.
                     </p>
                 </div>
@@ -140,7 +140,7 @@ export default function MyTasks({
                             })
                         }
                         options={[
-                            { value: 'all', label: 'Semua proyek' },
+                            { value: 'all', label: 'Semua pekerjaan' },
                             ...projects.map((project) => ({
                                 value: String(project.id),
                                 label: project.name,

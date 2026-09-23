@@ -21,7 +21,8 @@ class TaskPolicy
 
     public function update(User $user, Task $task): bool
     {
-        return $this->canWrite($user, $task->project);
+        return $this->canWrite($user, $task->project)
+            || ($user->is_active && $task->assignees()->whereKey($user->id)->exists());
     }
 
     public function move(User $user, Task $task): bool
@@ -31,6 +32,10 @@ class TaskPolicy
 
     public function archive(User $user, Task $task): bool
     {
+        if ($user->is_active && $user->isManager()) {
+            return true;
+        }
+
         $role = $user->projectRole($task->project);
 
         return in_array($role, [ProjectMemberRole::Owner, ProjectMemberRole::Manager], true);
@@ -38,6 +43,10 @@ class TaskPolicy
 
     private function canWrite(User $user, Project $project): bool
     {
+        if ($user->is_active && $user->isManager()) {
+            return true;
+        }
+
         $role = $user->projectRole($project);
 
         return $user->is_active && in_array($role, [

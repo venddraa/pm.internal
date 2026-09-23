@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Enums\StatusCategory;
 use App\Models\ActivityLog;
 use App\Models\Project;
+use App\Models\ProjectProgressItem;
 use App\Models\ProjectStatusRecord;
 use App\Models\Task;
 use App\Models\User;
@@ -48,8 +49,20 @@ final class InertiaData
     /** @return array<string, mixed> */
     public static function project(Project $project, bool $includeMembers = false): array
     {
-        $total = (int) ($project->total_tasks_count ?? 0);
-        $completed = (int) ($project->completed_tasks_count ?? 0);
+        if ($project->progress_mode === 'numeric') {
+            $total = (int) ($project->target_value
+                ?? ($project->relationLoaded('progressItems')
+                    ? $project->progressItems->sum('target_value')
+                    : $project->getAttribute('progress_target_sum'))
+                ?? 0);
+            $completed = $project->relationLoaded('progressItems')
+                ? (int) $project->progressItems->sum('completed_value')
+                : (int) ($project->getAttribute('progress_completed_sum') ?? 0);
+            $completed = min($completed, $total);
+        } else {
+            $total = (int) ($project->total_tasks_count ?? 0);
+            $completed = (int) ($project->completed_tasks_count ?? 0);
+        }
         $data = [
             'id' => $project->id,
             'name' => $project->name,
@@ -59,8 +72,14 @@ final class InertiaData
             'status_label' => $project->status->label(),
             'health' => $project->health->value,
             'health_label' => $project->health->label(),
+            'progress_mode' => $project->progress_mode,
+            'target_value' => $project->target_value,
+            'progress_unit' => $project->progress_unit,
             'start_date' => $project->start_date?->toDateString(),
             'due_date' => $project->due_date?->toDateString(),
+            'blockers' => $project->blockers,
+            'next_steps' => $project->next_steps,
+            'last_progress_update_at' => $project->last_progress_update_at?->toIso8601String(),
             'archived_at' => $project->archived_at?->toIso8601String(),
             'updated_at' => $project->updated_at?->toIso8601String(),
             'owner' => $project->relationLoaded('owner') ? self::user($project->owner) : null,
@@ -81,6 +100,28 @@ final class InertiaData
         }
 
         return $data;
+    }
+
+    /** @return array<string, mixed> */
+    public static function progressItem(ProjectProgressItem $item): array
+    {
+        $percent = $item->target_value === 0
+            ? 0
+            : (int) round((min($item->completed_value, $item->target_value) / $item->target_value) * 100);
+
+        return [
+            'id' => $item->id,
+            'name' => $item->name,
+            'target_value' => $item->target_value,
+            'completed_value' => $item->completed_value,
+            'percent' => $percent,
+            'status' => $item->status->value,
+            'status_label' => $item->status->label(),
+            'due_date' => $item->due_date?->toDateString(),
+            'notes' => $item->notes,
+            'assignee' => $item->assignee ? self::user($item->assignee) : null,
+            'updated_at' => $item->updated_at?->toIso8601String(),
+        ];
     }
 
     /** @return array<string, mixed> */

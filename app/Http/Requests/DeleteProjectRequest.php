@@ -34,7 +34,7 @@ class DeleteProjectRequest extends FormRequest
         return [
             'reason.required' => 'Alasan penghapusan wajib diisi.',
             'reason.min' => 'Alasan penghapusan minimal 10 karakter.',
-            'confirmation.in' => 'Kode proyek tidak sesuai.',
+            'confirmation.in' => 'Kode pekerjaan tidak sesuai.',
         ];
     }
 }

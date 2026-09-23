@@ -22,8 +22,14 @@ use Illuminate\Support\Carbon;
  * @property int $owner_id
  * @property ProjectStatus $status
  * @property ProjectHealth $health
+ * @property string $progress_mode
+ * @property int|null $target_value
+ * @property string|null $progress_unit
  * @property Carbon|null $start_date
  * @property Carbon|null $due_date
+ * @property string|null $blockers
+ * @property string|null $next_steps
+ * @property Carbon|null $last_progress_update_at
  * @property int $created_by
  * @property int $next_task_number
  * @property Carbon|null $archived_at
@@ -36,6 +42,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Label> $labels
  * @property-read Collection<int, ActivityLog> $activityLogs
+ * @property-read Collection<int, ProjectProgressItem> $progressItems
  */
 class Project extends Model
 {
@@ -46,8 +53,14 @@ class Project extends Model
         'owner_id',
         'status',
         'health',
+        'progress_mode',
+        'target_value',
+        'progress_unit',
         'start_date',
         'due_date',
+        'blockers',
+        'next_steps',
+        'last_progress_update_at',
         'created_by',
         'archived_at',
     ];
@@ -59,6 +72,7 @@ class Project extends Model
             'health' => ProjectHealth::class,
             'start_date' => 'date',
             'due_date' => 'date',
+            'last_progress_update_at' => 'datetime',
             'archived_at' => 'datetime',
         ];
     }
@@ -112,18 +126,18 @@ class Project extends Model
         return $this->hasMany(ActivityLog::class)->latest('created_at');
     }
 
+    /** @return HasMany<ProjectProgressItem, $this> */
+    public function progressItems(): HasMany
+    {
+        return $this->hasMany(ProjectProgressItem::class)->orderBy('position');
+    }
+
     /** @param Builder<Project> $query
      * @return Builder<Project>
      */
     public function scopeAccessibleTo(Builder $query, User $user): Builder
     {
-        return $query->when(
-            ! $user->isAdmin(),
-            fn (Builder $query) => $query->whereHas(
-                'members',
-                fn (Builder $members) => $members->whereKey($user->id),
-            ),
-        );
+        return $query;
     }
 
     /** @param Builder<Project> $query
@@ -144,7 +158,8 @@ class Project extends Model
             'tasks as completed_tasks_count' => fn (Builder $tasks) => $tasks
                 ->whereNull('archived_at')
                 ->whereHas('status', fn (Builder $statuses) => $statuses->where('category', StatusCategory::Done->value)),
-        ]);
+        ])->withSum('progressItems as progress_target_sum', 'target_value')
+            ->withSum('progressItems as progress_completed_sum', 'completed_value');
     }
 
     public function memberRole(User $user): ?ProjectMemberRole
@@ -155,6 +170,20 @@ class Project extends Model
     /** @return array{total: int, completed: int, open: int, percent: int} */
     public function progressStats(): array
     {
+        if ($this->progress_mode === 'numeric') {
+            $target = (int) ($this->target_value
+                ?? $this->getAttribute('progress_target_sum')
+                ?? $this->progressItems()->sum('target_value'));
+            $completed = (int) ($this->getAttribute('progress_completed_sum') ?? $this->progressItems()->sum('completed_value'));
+
+            return [
+                'total' => $target,
+                'completed' => min($completed, $target),
+                'open' => max(0, $target - $completed),
+                'percent' => $target === 0 ? 0 : (int) round((min($completed, $target) / $target) * 100),
+            ];
+        }
+
         $base = $this->tasks()->whereNull('archived_at');
         $total = (clone $base)->count();
         $completed = (clone $base)

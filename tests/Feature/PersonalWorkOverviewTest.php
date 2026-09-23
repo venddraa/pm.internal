@@ -47,7 +47,7 @@ class PersonalWorkOverviewTest extends TestCase
         $this->get('/my-tasks?state=all')->assertInertia(fn (Assert $page) => $page->where('tasks.total', 2));
     }
 
-    public function test_viewer_cannot_complete_tasks_from_personal_work(): void
+    public function test_assigned_viewer_can_complete_tasks_from_personal_work(): void
     {
         $owner = $this->makeUser();
         $viewer = $this->makeUser();
@@ -55,18 +55,18 @@ class PersonalWorkOverviewTest extends TestCase
         $task = $this->makeTask($project, $owner, ['assignee_ids' => [$viewer->id]]);
         $done = $project->statuses()->where('category', 'done')->firstOrFail();
         $this->actingAs($viewer)->get('/my-tasks')->assertInertia(fn (Assert $page) => $page
-            ->where('tasks.data.0.completion_status_id', null));
-        $this->patch(route('tasks.update', [$project, $task]), ['status_id' => $done->id])->assertForbidden();
+            ->where('tasks.data.0.completion_status_id', $done->id));
+        $this->patch(route('tasks.update', [$project, $task]), ['status_id' => $done->id])->assertSessionHasNoErrors();
     }
 
-    public function test_removed_members_and_archived_projects_are_excluded_from_personal_work(): void
+    public function test_assignment_survives_membership_change_but_archived_work_is_excluded(): void
     {
         $owner = $this->makeUser();
         $member = $this->makeUser();
         $project = $this->makeProject($owner, [[$member, ProjectMemberRole::Member]]);
         $this->makeTask($project, $owner, ['assignee_ids' => [$member->id]]);
         $project->members()->detach($member);
-        $this->actingAs($member)->get('/my-tasks?state=all')->assertInertia(fn (Assert $page) => $page->where('tasks.total', 0));
+        $this->actingAs($member)->get('/my-tasks?state=all')->assertInertia(fn (Assert $page) => $page->where('tasks.total', 1));
         $project->members()->attach($member, ['role' => ProjectMemberRole::Member->value]);
         $project->update(['archived_at' => now()]);
         $this->get('/home')->assertInertia(fn (Assert $page) => $page->where('summary.open', 0)->where('navigation.my_tasks_count', 0));

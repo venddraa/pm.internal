@@ -9,6 +9,7 @@ use App\Http\Controllers\LabelController;
 use App\Http\Controllers\MyTasksController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
+use App\Http\Controllers\ProjectProgressItemController;
 use App\Http\Controllers\ProjectSettingsController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
@@ -51,6 +52,10 @@ Route::middleware('auth')->group(function () {
         Route::patch('tasks/{task:task_number}', [TaskController::class, 'update'])->name('tasks.update');
         Route::delete('tasks/{task:task_number}', [TaskController::class, 'archive'])->name('tasks.archive');
         Route::patch('tasks/{task:task_number}/move', TaskMoveController::class)->name('tasks.move');
+
+        Route::post('progress-items', [ProjectProgressItemController::class, 'store'])->name('project-progress-items.store');
+        Route::patch('progress-items/{progressItem}', [ProjectProgressItemController::class, 'update'])->name('project-progress-items.update');
+        Route::delete('progress-items/{progressItem}', [ProjectProgressItemController::class, 'destroy'])->name('project-progress-items.destroy');
 
         Route::post('tasks/{task:task_number}/comments', [CommentController::class, 'store'])->name('comments.store');
         Route::patch('tasks/{task:task_number}/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');

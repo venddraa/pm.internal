@@ -96,5 +96,5 @@ export default function Login({ status, canResetPassword }: Props) {
 
 Login.layout = {
     title: 'Masuk ke ruang kerja',
-    description: 'Pantau proyek, temukan tugasmu, dan bergerak bersama tim.',
+    description: 'Pantau pekerjaan, temukan tugasmu, dan bergerak bersama tim.',
 };

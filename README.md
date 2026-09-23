@@ -1,6 +1,6 @@
 # pm-internal
 
-**Saya Akan Monitor** adalah aplikasi internal Jasa Marga untuk memonitor proyek dan mengelola pekerjaan departemen. Aplikasi ini menggunakan modern monolith: Laravel menangani routing, autentikasi, otorisasi, validasi, transaksi, query, notifikasi, dan penyimpanan; React melalui Inertia menangani pengalaman kerja interaktif tanpa API SPA terpisah.
+**Saya Akan Monitor** adalah aplikasi internal Jasa Marga untuk melihat pekerjaan departemen, tanggung jawab setiap anggota, serta progres yang perlu dipantau manajer. Aplikasi ini menggunakan modern monolith: Laravel menangani routing, autentikasi, otorisasi, validasi, transaksi, query, notifikasi, dan penyimpanan; React melalui Inertia menangani pengalaman kerja interaktif tanpa API SPA terpisah.
 
 Antarmuka desktop berorientasi produktivitas, dengan pola navigasi, List, Board, Views Bar, serta detail task yang terinspirasi ClickUp. Bingkai aplikasi, sidebar, dan halaman autentikasi memakai biru tua Jasa Marga, dipadukan dengan area kerja terang dan aksen kuning. Kartu, panel, tombol, dan dialog memakai sudut membulat; List tetap ringkas untuk membaca banyak tugas. Mode gelap dan navigasi mobile tetap tersedia.
 
@@ -8,8 +8,10 @@ Antarmuka desktop berorientasi produktivitas, dengan pola navigasi, List, Board,
 
 - Autentikasi sesi, reset password, profil, perubahan password, 2FA/passkey opsional, dan rate limiting login.
 - Registrasi publik dinonaktifkan; akun hanya dibuat administrator.
-- Peran global `ADMIN` dan `MEMBER`, serta peran proyek `OWNER`, `MANAGER`, `MEMBER`, dan `VIEWER`.
-- Direktori proyek, overview monitoring, status, health, progres berbasis kategori workflow, anggota, workflow, label, dan arsip.
+- Peran global `ADMIN`, `MANAGER`, dan `MEMBER`, serta peran internal pekerjaan `OWNER`, `MANAGER`, `MEMBER`, dan `VIEWER`.
+- Beranda personal dan ringkasan departemen untuk manajer, daftar Pekerjaan, Tugas Saya, kondisi, PIC, tenggat, dan arsip.
+- Progres checklist untuk pekerjaan kantor serta progres target angka per ruas/lokasi untuk pekerjaan seperti RFID.
+- Catatan kendala dan rencana berikutnya sebagai sumber laporan perkembangan.
 - Task ID per proyek seperti `IRP-42`, multi-assignee, prioritas, label, tanggal, deskripsi, komentar, attachment privat, dan activity log.
 - List view dengan grouping status, pencarian, filter URL, sorting server-side, pagination, quick add, dan pengubahan properti inline.
 - Board Kanban dengan drag-and-drop, perpindahan antar-status, reorder, optimistic update, dan persistensi posisi.

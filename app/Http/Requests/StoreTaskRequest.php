@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\TaskPriority;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -48,13 +49,13 @@ class StoreTaskRequest extends FormRequest
     public function after(): array
     {
         return [function (Validator $validator): void {
-            if (! $this->assigneesBelongToProject()) {
-                $validator->errors()->add('assignee_ids', 'Every assignee must be an active member of this project.');
+            if (! $this->assigneesAreActive()) {
+                $validator->errors()->add('assignee_ids', 'Setiap penanggung jawab harus merupakan pengguna aktif.');
             }
         }];
     }
 
-    private function assigneesBelongToProject(): bool
+    private function assigneesAreActive(): bool
     {
         $rawIds = $this->input('assignee_ids', []);
         if (! is_array($rawIds)) {
@@ -66,12 +67,10 @@ class StoreTaskRequest extends FormRequest
             return true;
         }
 
-        /** @var Project $project */
-        $project = $this->route('project');
-
-        return $project->members()
-            ->where('users.is_active', true)
-            ->whereIn('users.id', $ids)
+        return User::query()
+            ->whereNull('removed_at')
+            ->where('is_active', true)
+            ->whereIn('id', $ids)
             ->count() === $ids->count();
     }
 }

@@ -49,6 +49,9 @@ export function CreateProjectDialog({ owners }: { owners: User[] }) {
         owner_id: String(owners[0]?.id ?? ''),
         start_date: '',
         due_date: '',
+        progress_mode: 'checklist' as 'checklist' | 'numeric',
+        target_value: '',
+        progress_unit: '',
     });
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -70,20 +73,20 @@ export function CreateProjectDialog({ owners }: { owners: User[] }) {
             <DialogTrigger asChild>
                 <Button size="sm" className="h-10 px-4">
                     <Plus className="size-3.5" />
-                    Buat proyek
+                    Buat pekerjaan
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[560px]">
                 <DialogHeader>
-                    <DialogTitle>Buat proyek</DialogTitle>
+                    <DialogTitle>Buat pekerjaan</DialogTitle>
                     <DialogDescription>
-                        Siapkan proyek baru. Lima status kerja awal akan dibuat
-                        secara otomatis.
+                        Buat pekerjaan tim dengan progres checklist atau target
+                        angka.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="grid gap-4">
                     <div className="grid gap-3 sm:grid-cols-[1fr_120px]">
-                        <Field label="Nama proyek" error={form.errors.name}>
+                        <Field label="Nama pekerjaan" error={form.errors.name}>
                             <Input
                                 autoFocus
                                 value={form.data.name}
@@ -102,7 +105,7 @@ export function CreateProjectDialog({ owners }: { owners: User[] }) {
                                 placeholder="Internal Reporting Portal"
                             />
                         </Field>
-                        <Field label="Kode proyek" error={form.errors.key}>
+                        <Field label="Kode pekerjaan" error={form.errors.key}>
                             <Input
                                 value={form.data.key}
                                 onChange={(event) =>
@@ -126,10 +129,10 @@ export function CreateProjectDialog({ owners }: { owners: User[] }) {
                                 form.setData('description', event.target.value)
                             }
                             className="bg-background min-h-24 rounded-md border px-3 py-2 text-sm"
-                            placeholder="Apa tujuan utama proyek ini?"
+                            placeholder="Apa hasil yang ingin dicapai?"
                         />
                     </Field>
-                    <Field label="Pemilik proyek" error={form.errors.owner_id}>
+                    <Field label="PIC utama" error={form.errors.owner_id}>
                         <Select
                             value={form.data.owner_id}
                             onValueChange={(value) =>
@@ -151,6 +154,70 @@ export function CreateProjectDialog({ owners }: { owners: User[] }) {
                             </SelectContent>
                         </Select>
                     </Field>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <Field
+                            label="Cara menghitung progres"
+                            error={form.errors.progress_mode}
+                        >
+                            <Select
+                                value={form.data.progress_mode}
+                                onValueChange={(value) =>
+                                    form.setData(
+                                        'progress_mode',
+                                        value as 'checklist' | 'numeric',
+                                    )
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="checklist">
+                                        Checklist tugas
+                                    </SelectItem>
+                                    <SelectItem value="numeric">
+                                        Target angka / lokasi
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </Field>
+                        {form.data.progress_mode === 'numeric' && (
+                            <div className="grid grid-cols-[1fr_120px] gap-3">
+                                <Field
+                                    label="Target total"
+                                    error={form.errors.target_value}
+                                >
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        value={form.data.target_value}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'target_value',
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder="700"
+                                    />
+                                </Field>
+                                <Field
+                                    label="Satuan"
+                                    error={form.errors.progress_unit}
+                                >
+                                    <Input
+                                        value={form.data.progress_unit}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'progress_unit',
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder="titik"
+                                    />
+                                </Field>
+                            </div>
+                        )}
+                    </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                         <Field
                             label="Tanggal mulai"
@@ -195,7 +262,7 @@ export function CreateProjectDialog({ owners }: { owners: User[] }) {
                                 !form.data.key.trim()
                             }
                         >
-                            {form.processing && <Spinner />}Buat proyek
+                            {form.processing && <Spinner />}Buat pekerjaan
                         </Button>
                     </div>
                 </form>

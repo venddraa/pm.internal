@@ -2,7 +2,7 @@ export type User = {
     id: number;
     name: string;
     email: string;
-    role: 'admin' | 'member';
+    role: 'admin' | 'manager' | 'member';
     is_active: boolean;
     avatar_url: string | null;
     initials: string;

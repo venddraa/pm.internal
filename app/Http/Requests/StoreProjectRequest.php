@@ -15,7 +15,10 @@ class StoreProjectRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge(['key' => strtoupper(trim((string) $this->input('key')))]);
+        $this->merge([
+            'key' => strtoupper(trim((string) $this->input('key'))),
+            'progress_mode' => $this->input('progress_mode', 'checklist'),
+        ]);
     }
 
     /** @return array<string, mixed> */
@@ -31,6 +34,9 @@ class StoreProjectRequest extends FormRequest
             ],
             'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'progress_mode' => ['required', Rule::in(['checklist', 'numeric'])],
+            'target_value' => ['nullable', 'required_if:progress_mode,numeric', 'integer', 'min:1', 'max:100000000'],
+            'progress_unit' => ['nullable', 'required_if:progress_mode,numeric', 'string', 'max:40'],
         ];
     }
 }

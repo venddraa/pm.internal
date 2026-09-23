@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notification;
 class WorkEmailNotification extends Notification
 {
     /**
-     * @param array<string, mixed>|null $details
+     * @param  array<string, mixed>|null  $details
      */
     public function __construct(
         public readonly string $title,

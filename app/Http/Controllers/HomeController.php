@@ -33,13 +33,32 @@ class HomeController extends Controller
         $projects = Project::query()
             ->accessibleTo($user)
             ->active()
-            ->where('status', 'active')
             ->with('owner')
             ->withCount('members')
             ->withProgressCounts()
             ->latest('updated_at')
             ->limit(6)
             ->get();
+
+        $teamOpen = Task::query()
+            ->active()
+            ->whereHas('project', fn (Builder $query) => $query->active())
+            ->whereHas('status', fn (Builder $query) => $query->where('category', '!=', StatusCategory::Done->value));
+
+        $teamSummary = [
+            'works' => Project::query()->active()->count(),
+            'open' => (clone $teamOpen)->count(),
+            'overdue' => (clone $teamOpen)->whereDate('due_date', '<', $today)->count(),
+            'attention' => Project::query()
+                ->active()
+                ->where(fn (Builder $query) => $query
+                    ->where('health', '!=', 'on_track')
+                    ->orWhereHas('tasks', fn (Builder $tasks) => $tasks
+                        ->active()
+                        ->whereDate('due_date', '<', $today)
+                        ->whereHas('status', fn (Builder $status) => $status->where('category', '!=', StatusCategory::Done->value))))
+                ->count(),
+        ];
 
         return Inertia::render('home/index', [
             'taskSections' => collect($taskSections)->map(fn ($tasks) => $tasks->map(fn (Task $task) => InertiaData::personalTask($task, $user))),
@@ -51,6 +70,8 @@ class HomeController extends Controller
                 'today' => (clone $base)->whereDate('due_date', $today)->count(),
                 'upcoming' => (clone $base)->whereBetween('due_date', [$today->copy()->addDay(), $today->copy()->addDays(7)])->count(),
             ],
+            'managerView' => $user->isAdmin() || $user->isManager(),
+            'teamSummary' => $teamSummary,
         ]);
     }
 }

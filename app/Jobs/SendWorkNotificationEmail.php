@@ -11,6 +11,7 @@ use App\Notifications\WorkEmailNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 class SendWorkNotificationEmail implements ShouldQueue
 {
@@ -44,6 +45,11 @@ class SendWorkNotificationEmail implements ShouldQueue
             return;
         }
 
+        if ($notification->type === ProjectMemberAddedNotification::class
+            && ! $project->members()->whereKey($user->id)->exists()) {
+            return;
+        }
+
         $url = route('projects.overview', $project);
         $details = [
             'type' => 'project_member',
@@ -61,7 +67,7 @@ class SendWorkNotificationEmail implements ShouldQueue
             }
             $url = route('projects.list', ['project' => $project, 'task' => $task->task_number]);
 
-            $priorityValue = $task->priority instanceof \App\Enums\TaskPriority ? $task->priority->value : ($task->priority ?? 'none');
+            $priorityValue = $task->priority->value;
 
             $details = [
                 'type' => 'task_assigned',
@@ -69,27 +75,27 @@ class SendWorkNotificationEmail implements ShouldQueue
                 'project_key' => $project->key,
                 'task_reference' => $task->reference,
                 'task_title' => $task->title,
-                'creator_name' => $task->creator?->name,
+                'creator_name' => $task->creator->name,
                 'priority' => $priorityValue,
                 'priority_label' => match ($priorityValue) {
                     'urgent' => 'Mendesak (Urgent)',
                     'high' => 'Tinggi (High)',
-                    'medium' => 'Sedang (Medium)',
+                    'normal' => 'Normal',
                     'low' => 'Rendah (Low)',
                     default => 'Normal',
                 },
                 'priority_color' => match ($priorityValue) {
                     'urgent' => '#dc2626',
                     'high' => '#ea580c',
-                    'medium' => '#d97706',
+                    'normal' => '#64748b',
                     'low' => '#2563eb',
                     default => '#64748b',
                 },
-                'status_name' => $task->status?->name ?? 'To Do',
-                'status_color' => $task->status?->color ?? '#94a3b8',
+                'status_name' => $task->status->name,
+                'status_color' => $task->status->color,
                 'start_date' => $task->start_date ? $task->start_date->translatedFormat('d M Y') : null,
                 'due_date' => $task->due_date ? $task->due_date->translatedFormat('d M Y') : null,
-                'description' => $task->description ? \Illuminate\Support\Str::limit($task->description, 350) : null,
+                'description' => $task->description ? Str::limit($task->description, 350) : null,
             ];
         }
 

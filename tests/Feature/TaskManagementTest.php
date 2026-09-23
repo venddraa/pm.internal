@@ -90,7 +90,7 @@ class TaskManagementTest extends TestCase
         $this->assertEqualsCanonicalizing([$owner->id, $member->id], $task->assignees()->pluck('users.id')->all());
     }
 
-    public function test_non_project_user_cannot_be_assigned(): void
+    public function test_any_active_team_member_can_be_assigned(): void
     {
         $owner = $this->makeUser();
         $outsider = $this->makeUser();
@@ -99,9 +99,9 @@ class TaskManagementTest extends TestCase
 
         $this->actingAs($owner)->patch(route('tasks.update', [$project, $task]), [
             'assignee_ids' => [$outsider->id],
-        ])->assertSessionHasErrors('assignee_ids');
+        ])->assertSessionHasNoErrors();
 
-        $this->assertDatabaseMissing('task_user', ['task_id' => $task->id, 'user_id' => $outsider->id]);
+        $this->assertDatabaseHas('task_user', ['task_id' => $task->id, 'user_id' => $outsider->id]);
     }
 
     public function test_entering_done_sets_completion_and_reopening_clears_it(): void

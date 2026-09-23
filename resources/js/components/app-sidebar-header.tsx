@@ -62,12 +62,12 @@ function GlobalTaskDialog({
                 <DialogHeader>
                     <DialogTitle>Buat tugas</DialogTitle>
                     <DialogDescription>
-                        Tambahkan pekerjaan ke proyek yang dapat kamu akses.
+                        Tambahkan tugas ke pekerjaan tim.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="grid gap-4">
                     <div className="grid gap-1.5">
-                        <Label htmlFor="global-project">Proyek</Label>
+                        <Label htmlFor="global-project">Pekerjaan</Label>
                         <Select
                             value={form.data.project_key}
                             onValueChange={(value) =>
@@ -78,7 +78,7 @@ function GlobalTaskDialog({
                                 id="global-project"
                                 className="w-full"
                             >
-                                <SelectValue placeholder="Pilih proyek" />
+                                <SelectValue placeholder="Pilih pekerjaan" />
                             </SelectTrigger>
                             <SelectContent>
                                 {projects.map((project) => (
@@ -160,7 +160,7 @@ export function AppSidebarHeader() {
                                 href="/projects"
                                 className="hover:text-foreground hidden sm:inline"
                             >
-                                Proyek
+                                Pekerjaan
                             </Link>
                             <ChevronRight className="hidden size-3.5 sm:block" />
                             <span className="text-foreground truncate font-medium">
@@ -182,7 +182,7 @@ export function AppSidebarHeader() {
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                         className="bg-muted/60 h-9 rounded-full border-white/15 pl-8 text-xs shadow-none"
-                        placeholder="Cari proyek atau tugas…"
+                        placeholder="Cari pekerjaan atau tugas…"
                         aria-label="Pencarian global"
                     />
                 </form>
@@ -199,14 +199,12 @@ export function AppSidebarHeader() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>
-                                Buat di ruang kerja
-                            </DropdownMenuLabel>
+                            <DropdownMenuLabel>Buat baru</DropdownMenuLabel>
                             {navigation.can_create_project && (
                                 <DropdownMenuItem asChild>
                                     <Link href="/projects?create=1">
                                         <Plus className="size-4" />
-                                        Proyek baru
+                                        Pekerjaan baru
                                     </Link>
                                 </DropdownMenuItem>
                             )}
@@ -225,8 +223,8 @@ export function AppSidebarHeader() {
                             {!navigation.projects.length && (
                                 <p className="text-muted-foreground px-2 py-2 text-xs">
                                     {navigation.can_create_project
-                                        ? 'Buat proyek terlebih dahulu untuk menambahkan tugas.'
-                                        : 'Minta admin menambahkanmu ke proyek.'}
+                                        ? 'Buat pekerjaan terlebih dahulu untuk menambahkan tugas.'
+                                        : 'Belum ada pekerjaan yang tersedia.'}
                                 </p>
                             )}
                         </DropdownMenuContent>

@@ -24,6 +24,7 @@ class ProjectSettingsController extends Controller
             'members',
             'statuses' => fn ($query) => $query->withCount('tasks'),
             'labels' => fn ($query) => $query->withCount('tasks'),
+            'progressItems',
         ])
             ->loadCount([
                 'members',

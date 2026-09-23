@@ -35,7 +35,7 @@ class CommentsAndAttachmentsTest extends TestCase
         $this->assertSoftDeleted($comment);
     }
 
-    public function test_other_user_cannot_edit_comment_and_unrelated_user_cannot_comment(): void
+    public function test_other_user_cannot_edit_comment_but_team_can_comment(): void
     {
         $owner = $this->makeUser();
         $member = $this->makeUser();
@@ -45,8 +45,9 @@ class CommentsAndAttachmentsTest extends TestCase
         $comment = Comment::create(['task_id' => $task->id, 'author_id' => $owner->id, 'content' => 'Owner note']);
 
         $this->actingAs($member)->patch(route('comments.update', [$project, $task, $comment]), ['content' => 'Changed'])->assertForbidden();
-        $this->actingAs($outsider)->post(route('comments.store', [$project, $task]), ['content' => 'Unauthorized'])->assertForbidden();
+        $this->actingAs($outsider)->post(route('comments.store', [$project, $task]), ['content' => 'Team note'])->assertSessionHasNoErrors();
         $this->assertSame('Owner note', $comment->fresh()->content);
+        $this->assertDatabaseHas('comments', ['task_id' => $task->id, 'author_id' => $outsider->id, 'content' => 'Team note']);
     }
 
     public function test_authorized_attachment_upload_and_download_are_protected(): void
@@ -65,7 +66,7 @@ class CommentsAndAttachmentsTest extends TestCase
         $attachment = Attachment::firstOrFail();
         Storage::disk('local')->assertExists($attachment->storage_path);
         $this->actingAs($member)->get(route('attachments.download', [$project, $task, $attachment]))->assertOk();
-        $this->actingAs($outsider)->get(route('attachments.download', [$project, $task, $attachment]))->assertForbidden();
+        $this->actingAs($outsider)->get(route('attachments.download', [$project, $task, $attachment]))->assertOk();
     }
 
     public function test_attachment_type_validation_and_viewer_upload_denial(): void

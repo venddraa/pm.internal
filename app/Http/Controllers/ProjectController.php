@@ -75,7 +75,7 @@ class ProjectController extends Controller
     {
         $project = $service->create($request->validated(), $request->user());
 
-        return to_route('projects.list', $project)->with('success', 'Proyek berhasil dibuat.');
+        return to_route('projects.list', $project)->with('success', 'Pekerjaan berhasil dibuat.');
     }
 
     public function overview(Request $request, Project $project): Response
@@ -183,6 +183,11 @@ class ProjectController extends Controller
 
         DB::transaction(function () use ($data, $request, $project, $activity): void {
             $oldOwnerId = $project->owner_id;
+            if (array_key_exists('blockers', $data)
+                || array_key_exists('next_steps', $data)
+                || array_key_exists('progress_mode', $data)) {
+                $data['last_progress_update_at'] = now();
+            }
             $project->fill($data)->save();
 
             if (isset($data['owner_id']) && $data['owner_id'] !== $oldOwnerId) {
@@ -193,11 +198,11 @@ class ProjectController extends Controller
             }
 
             $activity->record($request->user(), $project, $project, 'project.updated', [
-                'description' => "{$request->user()->name} memperbarui pengaturan proyek.",
+                'description' => "{$request->user()->name} memperbarui pengaturan pekerjaan.",
             ]);
         });
 
-        return to_route('projects.settings', $project->fresh())->with('success', 'Pengaturan proyek berhasil diperbarui.');
+        return back()->with('success', 'Pekerjaan berhasil diperbarui.');
     }
 
     public function archive(Request $request, Project $project, ActivityLogger $activity): RedirectResponse
@@ -212,7 +217,7 @@ class ProjectController extends Controller
             'description' => "{$request->user()->name} mengarsipkan {$project->name}.",
         ]);
 
-        return to_route('projects.index')->with('success', 'Proyek berhasil diarsipkan.');
+        return to_route('projects.index')->with('success', 'Pekerjaan berhasil diarsipkan.');
     }
 
     public function destroy(DeleteProjectRequest $request, Project $project): RedirectResponse
@@ -253,7 +258,7 @@ class ProjectController extends Controller
             Storage::delete($attachmentPaths);
         }
 
-        return to_route('projects.index')->with('success', 'Proyek berhasil dihapus permanen.');
+        return to_route('projects.index')->with('success', 'Pekerjaan berhasil dihapus permanen.');
     }
 
     /** @return array<string, mixed> */
@@ -262,6 +267,7 @@ class ProjectController extends Controller
         $project->loadMissing([
             'owner',
             'members',
+            'progressItems.assignee',
             'statuses' => fn ($query) => $query->withCount(['tasks' => fn (Builder $tasks) => $tasks->whereNull('archived_at')]),
             'labels',
         ])
@@ -276,7 +282,13 @@ class ProjectController extends Controller
         return [
             'project' => InertiaData::project($project, true),
             'statuses' => $project->statuses->map(fn ($status) => InertiaData::status($status)),
-            'members' => $project->members->map(fn (User $member) => InertiaData::user($member))->values(),
+            'members' => User::query()
+                ->whereNull('removed_at')
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get()
+                ->map(fn (User $member) => InertiaData::user($member)),
+            'progressItems' => $project->progressItems->map(fn ($item) => InertiaData::progressItem($item))->values(),
             'labels' => $project->labels->map(fn ($label) => [
                 'id' => $label->id,
                 'name' => $label->name,

@@ -49,6 +49,11 @@ class UpdateProjectRequest extends FormRequest
             'health' => ['sometimes', 'required', Rule::enum(ProjectHealth::class)],
             'start_date' => ['sometimes', 'nullable', 'date'],
             'due_date' => ['sometimes', 'nullable', 'date', 'after_or_equal:start_date'],
+            'progress_mode' => ['sometimes', 'required', Rule::in(['checklist', 'numeric'])],
+            'target_value' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:100000000'],
+            'progress_unit' => ['sometimes', 'nullable', 'string', 'max:40'],
+            'blockers' => ['sometimes', 'nullable', 'string', 'max:10000'],
+            'next_steps' => ['sometimes', 'nullable', 'string', 'max:10000'],
         ];
     }
 }

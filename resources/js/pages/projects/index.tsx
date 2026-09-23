@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Pagination } from '@/components/app/pagination';
@@ -48,23 +48,24 @@ export default function ProjectsIndex({
     };
     return (
         <>
-            <Head title="Proyek" />
+            <Head title="Pekerjaan" />
             <div className="flex min-h-0 flex-1 flex-col">
                 <div className="bg-card flex items-center justify-between gap-4 border-b px-5 py-4">
                     <div>
                         <h1 className="text-lg font-semibold tracking-tight">
-                            Proyek
+                            Pekerjaan
                         </h1>
                         <p className="text-muted-foreground mt-0.5 text-xs">
                             Pantau penanggung jawab, kondisi, progres, dan
-                            tenggat setiap proyek.
+                            tenggat setiap pekerjaan departemen.
                         </p>
                     </div>
                     {canCreate ? (
                         <CreateProjectDialog owners={owners} />
                     ) : (
                         <span className="text-muted-foreground hidden max-w-48 text-right text-xs sm:block">
-                            Hubungi admin untuk membuat proyek baru.
+                            Hubungi admin atau manajer untuk membuat pekerjaan
+                            baru.
                         </span>
                     )}
                 </div>
@@ -75,7 +76,7 @@ export default function ProjectsIndex({
                             className="h-8 pl-8 text-xs shadow-none"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Cari proyek…"
+                            placeholder="Cari pekerjaan…"
                         />
                     </form>
                     <Select
@@ -120,15 +121,15 @@ export default function ProjectsIndex({
                 <div className="sam-scrollbar min-h-0 flex-1 overflow-auto p-4">
                     <div className="bg-card border-border/60 min-w-[780px] overflow-hidden rounded-2xl border shadow-sm">
                         <div className="bg-muted/70 text-muted-foreground grid h-8 grid-cols-[minmax(270px,1fr)_150px_110px_120px_170px_110px] items-center px-3 text-[10px] font-semibold tracking-wider uppercase">
-                            <span>Proyek</span>
-                            <span>Pemilik</span>
+                            <span>Pekerjaan</span>
+                            <span>PIC utama</span>
                             <span>Status</span>
                             <span>Kondisi</span>
                             <span>Progres</span>
                             <span>Tenggat</span>
                         </div>
                         {projects.data.map((project) => (
-                            <a
+                            <Link
                                 key={project.id}
                                 href={`/projects/${project.key}/list`}
                                 className="hover:bg-muted/35 grid min-h-14 grid-cols-[minmax(270px,1fr)_150px_110px_120px_170px_110px] items-center border-t px-3 text-xs"
@@ -175,15 +176,15 @@ export default function ProjectsIndex({
                                         year: '2-digit',
                                     })}
                                 </span>
-                            </a>
+                            </Link>
                         ))}
                         {projects.data.length === 0 && (
                             <div className="px-6 py-12 text-center">
                                 <p className="text-sm font-medium">
-                                    Proyek tidak ditemukan
+                                    Pekerjaan tidak ditemukan
                                 </p>
                                 <p className="text-muted-foreground mt-1 text-xs">
-                                    Sesuaikan filter atau buat proyek baru.
+                                    Sesuaikan filter atau buat pekerjaan baru.
                                 </p>
                             </div>
                         )}

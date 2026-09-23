@@ -108,6 +108,11 @@ class User extends Authenticatable implements PasskeyUser
         return $this->role === GlobalUserRole::Admin;
     }
 
+    public function isManager(): bool
+    {
+        return $this->role === GlobalUserRole::Manager;
+    }
+
     public function projectRole(Project $project): ?ProjectMemberRole
     {
         if ($project->relationLoaded('members')) {

@@ -20,8 +20,14 @@ export type Project = {
     status_label: string;
     health: ProjectHealthValue;
     health_label: string;
+    progress_mode: 'checklist' | 'numeric';
+    target_value: number | null;
+    progress_unit: string | null;
     start_date: string | null;
     due_date: string | null;
+    blockers: string | null;
+    next_steps: string | null;
+    last_progress_update_at: string | null;
     archived_at: string | null;
     updated_at: string | null;
     owner: User;
@@ -33,6 +39,20 @@ export type Project = {
         open: number;
         percent: number;
     };
+};
+
+export type ProgressItem = {
+    id: number;
+    name: string;
+    target_value: number;
+    completed_value: number;
+    percent: number;
+    status: StatusCategory;
+    status_label: string;
+    due_date: string | null;
+    notes: string | null;
+    assignee: User | null;
+    updated_at: string | null;
 };
 
 export type WorkflowStatus = {

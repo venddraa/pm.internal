@@ -1,11 +1,5 @@
-import { Link, usePage } from '@inertiajs/react';
-import {
-    Activity,
-    KanbanSquare,
-    LayoutDashboard,
-    ListTodo,
-    Settings,
-} from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { Settings } from 'lucide-react';
 import { AvatarStack } from '@/components/app/user-avatar';
 import { ProjectIcon } from '@/components/projects/project-icon';
 import {
@@ -13,25 +7,17 @@ import {
     ProjectStatusBadge,
 } from '@/components/tasks/task-indicators';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import type { Project } from '@/types';
-
-const views = [
-    { key: 'overview', label: 'Ringkasan', icon: LayoutDashboard },
-    { key: 'list', label: 'Daftar', icon: ListTodo },
-    { key: 'board', label: 'Papan', icon: KanbanSquare },
-    { key: 'activity', label: 'Aktivitas', icon: Activity },
-];
 
 export function ProjectHeader({
     project,
     actions,
+    canManage = false,
 }: {
     project: Project;
     actions?: React.ReactNode;
+    canManage?: boolean;
 }) {
-    const currentUrl = usePage().url;
-
     return (
         <div className="bg-card border-border/60 shrink-0 border-b">
             <div className="flex min-h-[72px] items-center justify-between gap-4 px-4 py-3 md:px-6">
@@ -69,46 +55,22 @@ export function ProjectHeader({
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                     {actions}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        asChild
-                    >
-                        <Link
-                            href={`/projects/${project.key}/settings`}
-                            aria-label="Pengaturan proyek"
+                    {canManage && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            asChild
                         >
-                            <Settings className="size-4" />
-                        </Link>
-                    </Button>
-                </div>
-            </div>
-            <div className="flex min-h-12 items-center gap-3 px-4 pb-3 md:px-6">
-                <nav
-                    className="bg-secondary/70 flex max-w-full items-center gap-1 overflow-x-auto rounded-full p-1"
-                    aria-label="Tampilan proyek"
-                >
-                    {views.map((view) => {
-                        const active = currentUrl.startsWith(
-                            `/projects/${project.key}/${view.key}`,
-                        );
-                        return (
                             <Link
-                                key={view.key}
-                                href={`/projects/${project.key}/${view.key}`}
-                                className={cn(
-                                    'text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                                    active && 'bg-card text-primary shadow-sm',
-                                )}
-                                aria-current={active ? 'page' : undefined}
+                                href={`/projects/${project.key}/settings`}
+                                aria-label="Pengaturan pekerjaan"
                             >
-                                <view.icon className="size-3.5" />
-                                {view.label}
+                                <Settings className="size-4" />
                             </Link>
-                        );
-                    })}
-                </nav>
+                        </Button>
+                    )}
+                </div>
             </div>
         </div>
     );

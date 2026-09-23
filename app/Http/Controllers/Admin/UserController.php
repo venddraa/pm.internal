@@ -85,7 +85,8 @@ class UserController extends Controller
         }
 
         if ($user->role === GlobalUserRole::Admin
-            && (($data['role'] ?? null) === GlobalUserRole::Member->value || ($data['is_active'] ?? true) === false)
+            && ((array_key_exists('role', $data) && $data['role'] !== GlobalUserRole::Admin->value)
+                || ($data['is_active'] ?? true) === false)
             && User::query()->where('role', GlobalUserRole::Admin->value)->where('is_active', true)->count() <= 1) {
             throw ValidationException::withMessages(['role' => 'Sedikitnya satu administrator harus tetap aktif.']);
         }

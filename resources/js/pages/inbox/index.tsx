@@ -23,7 +23,7 @@ export default function Inbox({
                                 Kotak Masuk
                             </h1>
                             <p className="text-muted-foreground mt-1 text-xs">
-                                Penugasan dan pembaruan proyek yang penting.
+                                Penugasan dan pembaruan pekerjaan yang penting.
                             </p>
                         </div>
                         {unread && (
@@ -107,8 +107,8 @@ export default function Inbox({
                                     Tidak ada notifikasi baru
                                 </p>
                                 <p className="text-muted-foreground mt-1 text-xs">
-                                    Penugasan dan pembaruan proyek akan tampil
-                                    di sini.
+                                    Penugasan dan pembaruan pekerjaan akan
+                                    tampil di sini.
                                 </p>
                             </div>
                         )}
