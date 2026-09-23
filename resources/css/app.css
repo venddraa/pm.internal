@@ -48,6 +48,7 @@
 }
 
 :root {
+    --sam-field-focus: #52769f;
     --background: #f2f6fc;
     --foreground: oklch(0.208 0.028 264.67);
     --card: oklch(1 0 0);
@@ -87,6 +88,7 @@
 }
 
 .dark {
+    --sam-field-focus: #829bb8;
     --background: oklch(0.18 0.025 260);
     --foreground: oklch(0.96 0.008 250);
     --card: oklch(0.215 0.027 260);
@@ -134,6 +136,7 @@
         mask-repeat: no-repeat;
     }
     .sam-auth {
+        --sam-field-focus: #829bb8;
         --foreground: #f5f8ff;
         --muted-foreground: #bdd0e7;
         --primary: #f4c83e;
@@ -338,6 +341,7 @@
     /* Chrome keeps its own contrast; portal menus use the page theme. */
     .sam-chrome,
     [data-sidebar='sidebar'] {
+        --sam-field-focus: #829bb8;
         --background: var(--sam-shell);
         --foreground: #f4f8ff;
         --muted: #2a5689;
@@ -381,6 +385,31 @@
 }
 
 @layer utilities {
+    /* One solid focus edge for editable fields, with no halo or layout shift. */
+    :root
+        :is(
+            input:not([type='checkbox']):not([type='radio']),
+            textarea,
+            select,
+            [data-slot='select-trigger']
+        ):focus-visible {
+        border-color: var(--sam-field-focus);
+        box-shadow: none;
+        outline: 2px solid var(--sam-field-focus);
+        outline-offset: -1px;
+    }
+
+    :root
+        :is(
+            input,
+            textarea,
+            select,
+            [data-slot='select-trigger']
+        )[aria-invalid='true']:focus-visible {
+        border-color: var(--destructive);
+        outline-color: var(--destructive);
+    }
+
     .sam-scrollbar {
         scrollbar-width: thin;
         scrollbar-color: color-mix(
