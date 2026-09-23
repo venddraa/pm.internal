@@ -36,6 +36,11 @@ class ProjectPolicy
         return $this->hasRole($user, $project, [ProjectMemberRole::Owner]);
     }
 
+    public function delete(User $user, Project $project): bool
+    {
+        return $user->is_active && $user->isAdmin();
+    }
+
     public function manageMembers(User $user, Project $project): bool
     {
         return $this->hasRole($user, $project, [

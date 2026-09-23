@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::get('settings', ProjectSettingsController::class)->name('projects.settings');
         Route::patch('/', [ProjectController::class, 'update'])->name('projects.update');
         Route::delete('/', [ProjectController::class, 'archive'])->name('projects.archive');
+        Route::delete('permanent', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
         Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
         Route::patch('tasks/{task:task_number}', [TaskController::class, 'update'])->name('tasks.update');

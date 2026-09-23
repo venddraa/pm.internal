@@ -43,6 +43,7 @@ class ProjectSettingsController extends Controller
                 'task_count' => $label->tasks_count,
             ]),
             'availableUsers' => User::query()
+                ->whereNull('removed_at')
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get()
@@ -58,6 +59,7 @@ class ProjectSettingsController extends Controller
                 'manageMembers' => $request->user()->can('manageMembers', $project),
                 'manageWorkflow' => $request->user()->can('manageWorkflow', $project),
                 'archiveProject' => $request->user()->can('archive', $project),
+                'deleteProject' => $request->user()->can('delete', $project),
             ],
         ]);
     }

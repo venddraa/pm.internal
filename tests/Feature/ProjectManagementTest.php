@@ -5,8 +5,11 @@ namespace Tests\Feature;
 use App\Enums\GlobalUserRole;
 use App\Enums\ProjectMemberRole;
 use App\Enums\StatusCategory;
+use App\Models\Attachment;
 use App\Models\Project;
+use App\Models\ProjectDeletion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProjectManagementTest extends TestCase
@@ -117,5 +120,56 @@ class ProjectManagementTest extends TestCase
             'key' => 'dup',
             'owner_id' => $owner->id,
         ])->assertSessionHasErrors('key');
+    }
+
+    public function test_only_admin_can_permanently_delete_project_with_reason(): void
+    {
+        Storage::fake('local');
+        $admin = $this->makeUser(GlobalUserRole::Admin);
+        $owner = $this->makeUser();
+        $project = $this->makeProject($owner);
+        $task = $this->makeTask($project, $owner);
+        $path = "attachments/{$project->id}/{$task->id}/test.pdf";
+        Storage::disk('local')->put($path, 'test');
+        Attachment::create([
+            'task_id' => $task->id,
+            'uploaded_by' => $owner->id,
+            'original_name' => 'test.pdf',
+            'storage_path' => $path,
+            'mime_type' => 'application/pdf',
+            'file_size' => 4,
+        ]);
+
+        $this->actingAs($owner)->delete(route('projects.destroy', $project), [
+            'reason' => 'Proyek dummy tidak diperlukan.',
+            'confirmation' => $project->key,
+        ])->assertForbidden();
+
+        $this->actingAs($admin)->delete(route('projects.destroy', $project), [
+            'reason' => 'Proyek dummy tidak diperlukan.',
+            'confirmation' => $project->key,
+        ])->assertRedirect(route('projects.index'));
+
+        $this->assertDatabaseMissing('projects', ['id' => $project->id]);
+        $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+        Storage::disk('local')->assertMissing($path);
+        $deletion = ProjectDeletion::firstOrFail();
+        $this->assertSame('Proyek dummy tidak diperlukan.', $deletion->reason);
+        $this->assertSame($project->key, $deletion->project_key);
+        $this->assertSame(1, $deletion->summary['tasks']);
+        $this->assertSame(1, $deletion->summary['attachments']);
+    }
+
+    public function test_permanent_project_delete_requires_reason_and_matching_key(): void
+    {
+        $admin = $this->makeUser(GlobalUserRole::Admin);
+        $project = $this->makeProject($admin);
+
+        $this->actingAs($admin)->delete(route('projects.destroy', $project), [
+            'reason' => 'short',
+            'confirmation' => 'WRONG',
+        ])->assertSessionHasErrors(['reason', 'confirmation']);
+
+        $this->assertNotNull($project->fresh());
     }
 }

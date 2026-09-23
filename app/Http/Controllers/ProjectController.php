@@ -7,12 +7,14 @@ use App\Enums\ProjectMemberRole;
 use App\Enums\ProjectStatus;
 use App\Enums\StatusCategory;
 use App\Enums\TaskPriority;
+use App\Http\Requests\DeleteProjectRequest;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\ActivityLog;
 use App\Models\Attachment;
 use App\Models\Comment;
 use App\Models\Project;
+use App\Models\ProjectDeletion;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\ActivityLogger;
@@ -22,6 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -62,7 +65,7 @@ class ProjectController extends Controller
             'projectStatuses' => $this->enumOptions(ProjectStatus::cases()),
             'projectHealth' => $this->enumOptions(ProjectHealth::cases()),
             'owners' => $request->user()->isAdmin()
-                ? User::query()->where('is_active', true)->orderBy('name')->get()->map(fn (User $user) => InertiaData::user($user))
+                ? User::query()->whereNull('removed_at')->where('is_active', true)->orderBy('name')->get()->map(fn (User $user) => InertiaData::user($user))
                 : [],
             'canCreate' => $request->user()->can('create', Project::class),
         ]);
@@ -212,6 +215,47 @@ class ProjectController extends Controller
         return to_route('projects.index')->with('success', 'Proyek berhasil diarsipkan.');
     }
 
+    public function destroy(DeleteProjectRequest $request, Project $project): RedirectResponse
+    {
+        $attachmentPaths = $project->tasks()
+            ->join('attachments', 'attachments.task_id', '=', 'tasks.id')
+            ->pluck('attachments.storage_path')
+            ->all();
+
+        $summary = [
+            'tasks' => $project->tasks()->count(),
+            'comments' => Comment::query()->whereHas('task', fn (Builder $query) => $query->where('project_id', $project->id))->count(),
+            'attachments' => count($attachmentPaths),
+            'members' => $project->members()->count(),
+        ];
+
+        DB::transaction(function () use ($request, $project, $summary): void {
+            ProjectDeletion::create([
+                'actor_id' => $request->user()->id,
+                'project_id' => $project->id,
+                'project_key' => $project->key,
+                'project_name' => $project->name,
+                'reason' => $request->validated('reason'),
+                'summary' => $summary,
+                'deleted_at' => now(),
+            ]);
+
+            DB::table('notifications')
+                ->whereRaw("(data::jsonb ->> 'project_key') = ?", [$project->key])
+                ->delete();
+
+            // Tasks must be removed first because their statuses use a restrictive FK.
+            $project->tasks()->delete();
+            $project->delete();
+        });
+
+        if ($attachmentPaths !== []) {
+            Storage::delete($attachmentPaths);
+        }
+
+        return to_route('projects.index')->with('success', 'Proyek berhasil dihapus permanen.');
+    }
+
     /** @return array<string, mixed> */
     private function projectContext(Request $request, Project $project): array
     {
@@ -244,6 +288,7 @@ class ProjectController extends Controller
                 'manageWorkflow' => $request->user()->can('manageWorkflow', $project),
                 'createTask' => $request->user()->can('create', [Task::class, $project]),
                 'archiveProject' => $request->user()->can('archive', $project),
+                'deleteProject' => $request->user()->can('delete', $project),
             ],
         ];
     }

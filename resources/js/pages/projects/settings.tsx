@@ -38,6 +38,7 @@ type Props = {
         manageMembers: boolean;
         manageWorkflow: boolean;
         archiveProject: boolean;
+        deleteProject: boolean;
     };
 };
 
@@ -242,12 +243,15 @@ function GeneralSettings({
                     />
                 </Field>
             </div>
-            <div className="flex items-center justify-between border-t pt-4">
-                {permissions.archiveProject ? (
-                    <ArchiveProject project={project} />
-                ) : (
-                    <span />
-                )}
+            <div className="flex items-center justify-between gap-3 border-t pt-4">
+                <div className="flex items-center gap-1">
+                    {permissions.archiveProject && (
+                        <ArchiveProject project={project} />
+                    )}
+                    {permissions.deleteProject && (
+                        <DeleteProject project={project} />
+                    )}
+                </div>
                 <Button type="submit" size="sm" disabled={form.processing}>
                     {form.processing && <Spinner />}Simpan perubahan
                 </Button>
@@ -898,6 +902,100 @@ function ArchiveProject({ project }: { project: Project }) {
                 >
                     Arsipkan proyek
                 </Button>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function DeleteProject({ project }: { project: Project }) {
+    const [open, setOpen] = useState(false);
+    const form = useForm({ reason: '', confirmation: '' });
+
+    const destroy = (event: FormEvent) => {
+        event.preventDefault();
+        form.delete(`/projects/${project.key}/permanent`, {
+            preserveScroll: true,
+            onSuccess: () => setOpen(false),
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive text-xs"
+                >
+                    Hapus proyek
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>Hapus permanen {project.name}?</DialogTitle>
+                    <DialogDescription>
+                        Semua tugas, komentar, workflow, label, attachment, dan
+                        riwayat aktivitas proyek akan dihapus. Tindakan ini
+                        tidak dapat dibatalkan.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={destroy} className="grid gap-4">
+                    <Field
+                        label="Alasan penghapusan"
+                        error={form.errors.reason}
+                    >
+                        <textarea
+                            value={form.data.reason}
+                            onChange={(event) =>
+                                form.setData('reason', event.target.value)
+                            }
+                            rows={4}
+                            maxLength={1000}
+                            placeholder="Contoh: Proyek dummy untuk pengujian sudah tidak diperlukan."
+                            className="border-input bg-background min-h-24 w-full resize-y rounded-xl border px-3 py-2 text-sm"
+                            required
+                        />
+                    </Field>
+                    <Field
+                        label={`Ketik ${project.key} untuk konfirmasi`}
+                        error={form.errors.confirmation}
+                    >
+                        <Input
+                            value={form.data.confirmation}
+                            onChange={(event) =>
+                                form.setData(
+                                    'confirmation',
+                                    event.target.value.toUpperCase(),
+                                )
+                            }
+                            placeholder={project.key}
+                            autoComplete="off"
+                            required
+                        />
+                    </Field>
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                            disabled={form.processing}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="destructive"
+                            disabled={
+                                form.processing ||
+                                form.data.confirmation !== project.key
+                            }
+                        >
+                            {form.processing && <Spinner />}
+                            Hapus permanen
+                        </Button>
+                    </div>
+                </form>
             </DialogContent>
         </Dialog>
     );
