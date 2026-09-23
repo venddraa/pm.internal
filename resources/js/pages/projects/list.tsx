@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { ChevronDown, ListTodo } from 'lucide-react';
+import * as React from 'react';
 import { Pagination } from '@/components/app/pagination';
 import { ProjectPage } from '@/components/projects/project-page';
 import { CreateTaskDialog } from '@/components/tasks/create-task-dialog';
@@ -48,6 +49,31 @@ export default function ProjectList({
             tasks.data.filter((task) => task.status_id === status.id),
         ]),
     );
+
+    const storageKey = `collapsed-statuses-${project.key}`;
+
+    const [collapsed, setCollapsed] = React.useState<Record<number, boolean>>(
+        () => {
+            try {
+                const stored = sessionStorage.getItem(storageKey);
+                return stored ? (JSON.parse(stored) as Record<number, boolean>) : {};
+            } catch {
+                return {};
+            }
+        },
+    );
+
+    const toggleStatus = (statusId: number) => {
+        setCollapsed((prev) => {
+            const next = { ...prev, [statusId]: !prev[statusId] };
+            try {
+                sessionStorage.setItem(storageKey, JSON.stringify(next));
+            } catch {
+                // sessionStorage not available
+            }
+            return next;
+        });
+    };
 
     return (
         <>
@@ -136,15 +162,31 @@ export default function ProjectList({
                                 {statuses.map((status) => {
                                     const groupTasks =
                                         grouped.get(status.id) ?? [];
+                                    const isCollapsed = !!collapsed[status.id];
                                     return (
                                         <section
                                             key={status.id}
                                             aria-labelledby={`status-${status.id}`}
                                         >
-                                            <div className="bg-background/95 sticky top-11 z-[1] flex h-9 items-center gap-2 border-t border-b px-3 backdrop-blur">
-                                                <ChevronDown className="text-muted-foreground size-3.5" />
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    toggleStatus(status.id)
+                                                }
+                                                className="bg-background/95 hover:bg-muted/40 sticky top-11 z-[1] flex h-9 w-full cursor-pointer items-center gap-2 border-t border-b px-3 text-left backdrop-blur transition-colors"
+                                                aria-expanded={!isCollapsed}
+                                                aria-controls={`group-${status.id}`}
+                                            >
+                                                <ChevronDown
+                                                    className="text-muted-foreground size-3.5 shrink-0 transition-transform duration-200"
+                                                    style={{
+                                                        transform: isCollapsed
+                                                            ? 'rotate(-90deg)'
+                                                            : 'rotate(0deg)',
+                                                    }}
+                                                />
                                                 <span
-                                                    className="size-2.5 rounded-full"
+                                                    className="size-2.5 shrink-0 rounded-full"
                                                     style={{
                                                         backgroundColor:
                                                             status.color,
@@ -160,37 +202,42 @@ export default function ProjectList({
                                                     {status.task_count ??
                                                         groupTasks.length}
                                                 </span>
+                                            </button>
+                                            <div
+                                                id={`group-${status.id}`}
+                                                hidden={isCollapsed}
+                                            >
+                                                {groupTasks.map((task) => (
+                                                    <TaskRow
+                                                        key={task.id}
+                                                        project={project}
+                                                        task={task}
+                                                        statuses={statuses}
+                                                        members={members}
+                                                        priorityOptions={
+                                                            priorityOptions
+                                                        }
+                                                        canEdit={
+                                                            permissions.createTask
+                                                        }
+                                                        canArchive={
+                                                            permissions.updateProject
+                                                        }
+                                                    />
+                                                ))}
+                                                {groupTasks.length === 0 && (
+                                                    <div className="bg-card text-muted-foreground border-t px-10 py-2 text-[11px]">
+                                                        Belum ada tugas pada
+                                                        status ini.
+                                                    </div>
+                                                )}
+                                                {permissions.createTask && (
+                                                    <QuickTaskInput
+                                                        projectKey={project.key}
+                                                        statusId={status.id}
+                                                    />
+                                                )}
                                             </div>
-                                            {groupTasks.map((task) => (
-                                                <TaskRow
-                                                    key={task.id}
-                                                    project={project}
-                                                    task={task}
-                                                    statuses={statuses}
-                                                    members={members}
-                                                    priorityOptions={
-                                                        priorityOptions
-                                                    }
-                                                    canEdit={
-                                                        permissions.createTask
-                                                    }
-                                                    canArchive={
-                                                        permissions.updateProject
-                                                    }
-                                                />
-                                            ))}
-                                            {groupTasks.length === 0 && (
-                                                <div className="bg-card text-muted-foreground border-t px-10 py-2 text-[11px]">
-                                                    Belum ada tugas pada status
-                                                    ini.
-                                                </div>
-                                            )}
-                                            {permissions.createTask && (
-                                                <QuickTaskInput
-                                                    projectKey={project.key}
-                                                    statusId={status.id}
-                                                />
-                                            )}
                                         </section>
                                     );
                                 })}

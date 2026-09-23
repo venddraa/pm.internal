@@ -77,15 +77,17 @@ function ProjectNavigationItem({
             onOpenChange={setOpen}
             className="group/project"
         >
-            <SidebarMenuItem>
+            <SidebarMenuItem className="mb-0.5">
                 <div
                     className={cn(
-                        'flex items-center rounded-md',
-                        selected && 'bg-sidebar-accent',
+                        'flex items-center rounded-md transition-colors',
+                        selected && !open && 'bg-sidebar-accent text-sidebar-accent-foreground font-medium',
+                        selected && open && 'text-sidebar-foreground font-medium',
+                        'hover:bg-sidebar-accent/50',
                     )}
                 >
                     <CollapsibleTrigger
-                        className="text-muted-foreground hover:bg-background/70 hover:text-foreground ml-1 flex size-6 shrink-0 items-center justify-center rounded group-data-[collapsible=icon]:hidden"
+                        className="text-muted-foreground hover:bg-background/50 hover:text-foreground ml-1 flex size-6 shrink-0 items-center justify-center rounded transition-colors group-data-[collapsible=icon]:hidden"
                         aria-label={`${open ? 'Tutup' : 'Buka'} ${project.name}`}
                     >
                         {open ? (
@@ -96,9 +98,8 @@ function ProjectNavigationItem({
                     </CollapsibleTrigger>
                     <SidebarMenuButton
                         asChild
-                        isActive={selected}
                         tooltip={project.name}
-                        className="h-8 flex-1 px-1.5 font-normal"
+                        className="h-8 flex-1 px-1.5 font-normal hover:bg-transparent"
                     >
                         <Link href={`/projects/${project.key}/list`} prefetch>
                             <ProjectIcon
@@ -110,7 +111,7 @@ function ProjectNavigationItem({
                     </SidebarMenuButton>
                 </div>
                 <CollapsibleContent>
-                    <SidebarMenuSub className="border-sidebar-border my-0 gap-0 py-0">
+                    <SidebarMenuSub className="border-sidebar-border mt-1 mb-1 gap-0.5 py-0.5">
                         {projectViews.map(({ label, view, icon: Icon }) => (
                             <SidebarMenuSubItem key={view}>
                                 <SidebarMenuSubButton
@@ -119,7 +120,7 @@ function ProjectNavigationItem({
                                     isActive={currentUrl.startsWith(
                                         `/projects/${project.key}/${view}`,
                                     )}
-                                    className="h-7"
+                                    className="h-7 text-xs rounded-md"
                                 >
                                     <Link
                                         href={`/projects/${project.key}/${view}`}
@@ -226,7 +227,7 @@ export function AppSidebar() {
                         )}
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
-                        <SidebarMenu className="gap-0.5">
+                        <SidebarMenu className="gap-1">
                             {navigation.projects.map((project) => (
                                 <ProjectNavigationItem
                                     key={project.id}
