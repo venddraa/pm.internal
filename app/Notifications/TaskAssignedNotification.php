@@ -26,14 +26,12 @@ class TaskAssignedNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'Tugas baru untukmu',
-            'message' => "{$this->actor->name} menugaskan kamu pada {$this->task->reference}.",
+            'title' => 'Pekerjaan baru untukmu',
+            'message' => "{$this->actor->name} menugaskan kamu: {$this->task->title}.",
             'project_key' => $this->task->project->key,
+            'task_id' => $this->task->id,
             'task_number' => $this->task->task_number,
-            'url' => route('projects.list', [
-                'project' => $this->task->project,
-                'task' => $this->task->task_number,
-            ], false),
+            'url' => route('home', ['task' => $this->task->id], false),
         ];
     }
 }

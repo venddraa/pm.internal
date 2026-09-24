@@ -10,7 +10,7 @@ class MonitoringAuthorizationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_member_cannot_access_an_unrelated_project(): void
+    public function test_active_member_can_see_all_team_work_areas(): void
     {
         $owner = $this->makeUser();
         $outsider = $this->makeUser();
@@ -18,7 +18,7 @@ class MonitoringAuthorizationTest extends TestCase
 
         $this->actingAs($outsider)
             ->get(route('projects.overview', $project))
-            ->assertForbidden();
+            ->assertOk();
     }
 
     public function test_viewer_can_read_but_cannot_modify_project_or_tasks(): void

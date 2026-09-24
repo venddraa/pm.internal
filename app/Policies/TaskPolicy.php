@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\ProjectMemberRole;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -16,12 +15,16 @@ class TaskPolicy
 
     public function create(User $user, Project $project): bool
     {
-        return $this->canWrite($user, $project);
+        return $user->is_active && $project->archived_at === null;
     }
 
     public function update(User $user, Task $task): bool
     {
-        return $this->canWrite($user, $task->project);
+        return $user->is_active && (
+            $user->isAdmin()
+            || $task->created_by === $user->id
+            || $task->assignees()->whereKey($user->id)->exists()
+        );
     }
 
     public function move(User $user, Task $task): bool
@@ -31,19 +34,6 @@ class TaskPolicy
 
     public function archive(User $user, Task $task): bool
     {
-        $role = $user->projectRole($task->project);
-
-        return in_array($role, [ProjectMemberRole::Owner, ProjectMemberRole::Manager], true);
-    }
-
-    private function canWrite(User $user, Project $project): bool
-    {
-        $role = $user->projectRole($project);
-
-        return $user->is_active && in_array($role, [
-            ProjectMemberRole::Owner,
-            ProjectMemberRole::Manager,
-            ProjectMemberRole::Member,
-        ], true);
+        return $user->is_active && ($user->isAdmin() || $task->created_by === $user->id);
     }
 }

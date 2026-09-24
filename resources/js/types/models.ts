@@ -94,6 +94,14 @@ export type Task = {
     labels: Label[];
     start_date: string | null;
     due_date: string | null;
+    scheduled_at: string | null;
+    status_note: string | null;
+    result_notes: string | null;
+    next_action: string | null;
+    reference_url: string | null;
+    agenda_status: 'todo' | 'progress' | 'waiting' | 'done';
+    agenda_status_label: string;
+    agenda_status_color: string;
     position: number;
     completed_at: string | null;
     archived_at: string | null;

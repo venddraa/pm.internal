@@ -23,7 +23,7 @@ class TestWorkEmail extends Command
         }
 
         $this->info('Penerima: '.$user->notification_email);
-        $this->info('Subjek: [PM Internal] Uji notifikasi email');
+        $this->info('Subjek: [Project Management Internal - ITPG] Uji notifikasi email');
         if (! $this->option('send')) {
             $this->info('Preview saja. Tidak ada email dikirim. Gunakan --send setelah SMTP dikonfigurasi.');
 
@@ -39,7 +39,7 @@ class TestWorkEmail extends Command
 
         Notification::route('mail', $user->notification_email)->notify(new WorkEmailNotification(
             'Uji notifikasi email',
-            'Ini adalah uji pengiriman PM Internal. Tidak ada tugas atau proyek yang diubah.',
+            'Ini adalah uji pengiriman Project Management Internal - ITPG. Tidak ada pekerjaan yang diubah.',
             route('home'),
         ));
         $this->info('Email diterima oleh transport SMTP. Periksa inbox/spam penerima untuk memastikan pengiriman.');

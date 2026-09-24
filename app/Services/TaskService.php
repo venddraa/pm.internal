@@ -39,7 +39,18 @@ class TaskService
                 ->max('position')) + self::POSITION_STEP;
 
             $task = Task::create([
-                ...Arr::only($data, ['title', 'description', 'priority', 'start_date', 'due_date']),
+                ...Arr::only($data, [
+                    'title',
+                    'description',
+                    'priority',
+                    'start_date',
+                    'due_date',
+                    'scheduled_at',
+                    'status_note',
+                    'result_notes',
+                    'next_action',
+                    'reference_url',
+                ]),
                 'project_id' => $project->id,
                 'task_number' => $number,
                 'status_id' => $status->id,
@@ -85,6 +96,11 @@ class TaskService
                 'priority',
                 'start_date',
                 'due_date',
+                'scheduled_at',
+                'status_note',
+                'result_notes',
+                'next_action',
+                'reference_url',
             ]);
 
             if (array_key_exists('status_id', $data)) {

@@ -117,13 +117,7 @@ class Project extends Model
      */
     public function scopeAccessibleTo(Builder $query, User $user): Builder
     {
-        return $query->when(
-            ! $user->isAdmin(),
-            fn (Builder $query) => $query->whereHas(
-                'members',
-                fn (Builder $members) => $members->whereKey($user->id),
-            ),
-        );
+        return $query;
     }
 
     /** @param Builder<Project> $query

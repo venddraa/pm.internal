@@ -56,7 +56,9 @@ export default function ProjectList({
         () => {
             try {
                 const stored = sessionStorage.getItem(storageKey);
-                return stored ? (JSON.parse(stored) as Record<number, boolean>) : {};
+                return stored
+                    ? (JSON.parse(stored) as Record<number, boolean>)
+                    : {};
             } catch {
                 return {};
             }

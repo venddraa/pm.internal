@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\ProjectMemberRole;
 use App\Models\Attachment;
 use App\Models\Task;
 use App\Models\User;
@@ -16,11 +15,7 @@ class AttachmentPolicy
 
     public function create(User $user, Task $task): bool
     {
-        return $user->is_active && in_array($user->projectRole($task->project), [
-            ProjectMemberRole::Owner,
-            ProjectMemberRole::Manager,
-            ProjectMemberRole::Member,
-        ], true);
+        return $user->is_active && $user->can('update', $task);
     }
 
     public function delete(User $user, Attachment $attachment): bool

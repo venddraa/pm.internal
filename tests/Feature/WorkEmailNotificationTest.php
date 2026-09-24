@@ -40,7 +40,7 @@ class WorkEmailNotificationTest extends TestCase
         (new SendWorkNotificationEmail($member->id, $member->notifications()->firstOrFail()->id))->handle();
         Notification::assertSentOnDemand(WorkEmailNotification::class, function ($notification, $channels, $notifiable) use ($task) {
             return $notifiable->routes['mail'] === 'pilot@example.com'
-                && str_contains($notification->url, 'task='.$task->task_number)
+                && str_contains($notification->url, 'task='.$task->id)
                 && $channels === ['mail'];
         });
     }

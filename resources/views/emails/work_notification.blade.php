@@ -179,7 +179,7 @@
                     <tr>
                         <td style="background-color: #f8fafc; padding: 24px 32px; border-top: 1px solid #e2e8f0; text-align: center;">
                             <div style="font-size: 12px; color: #64748b; line-height: 1.6; margin-bottom: 8px;">
-                                Email ini dikirim secara otomatis oleh <strong>Sistem Monitoring PM Internal</strong>.<br>
+                                Email ini dikirim secara otomatis oleh <strong>Project Management Internal - ITPG</strong>.<br>
                                 Divisi Information Technology Planning &amp; Governance — <strong>PT Jasa Marga Tollroad Operator</strong>
                             </div>
                             <div style="font-size: 11px; color: #94a3b8;">

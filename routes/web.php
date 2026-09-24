@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\AgendaTaskController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\HomeController;
@@ -24,6 +25,8 @@ Route::get('/', fn () => auth()->check()
 
 Route::middleware('auth')->group(function () {
     Route::get('home', HomeController::class)->name('home');
+    Route::post('agenda/tasks', [AgendaTaskController::class, 'store'])->name('agenda.tasks.store');
+    Route::patch('agenda/tasks/{task:id}', [AgendaTaskController::class, 'update'])->name('agenda.tasks.update');
     Route::redirect('dashboard', '/home')->name('dashboard');
     Route::get('my-tasks', MyTasksController::class)->name('my-tasks');
     Route::get('search', SearchController::class)->name('search');

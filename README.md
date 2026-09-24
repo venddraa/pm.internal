@@ -1,19 +1,20 @@
 # pm-internal
 
-**Saya Akan Monitor** adalah aplikasi internal Jasa Marga untuk memonitor proyek dan mengelola pekerjaan departemen. Aplikasi ini menggunakan modern monolith: Laravel menangani routing, autentikasi, otorisasi, validasi, transaksi, query, notifikasi, dan penyimpanan; React melalui Inertia menangani pengalaman kerja interaktif tanpa API SPA terpisah.
+**Project Management Internal - ITPG** adalah agenda pekerjaan bersama untuk tim IT Planning & Governance Jasa Marga. Tujuan utamanya sederhana: ketika tim membuka aplikasi, semua orang langsung mengetahui pekerjaan yang aktif, siapa yang ditugaskan, kondisi terakhir, hasil kegiatan, dan tindak lanjutnya. Laravel menangani routing, autentikasi, otorisasi, validasi, transaksi, query, notifikasi, dan penyimpanan; React melalui Inertia menangani pengalaman kerja interaktif tanpa API SPA terpisah.
 
-Antarmuka desktop berorientasi produktivitas, dengan pola navigasi, List, Board, Views Bar, serta detail task yang terinspirasi ClickUp. Bingkai aplikasi, sidebar, dan halaman autentikasi memakai biru tua Jasa Marga, dipadukan dengan area kerja terang dan aksen kuning. Kartu, panel, tombol, dan dialog memakai sudut membulat; List tetap ringkas untuk membaca banyak tugas. Mode gelap dan navigasi mobile tetap tersedia.
+Layar harian memakai satu daftar **Agenda Tim** dengan tampilan Semua Aktif, Tugas Saya, Hari Ini, Menunggu, dan Selesai. Istilah proyek pada data lama dipakai sebagai **area pekerjaan** seperti RFID, Audit, Compliance, RSTI, atau Umum. Antarmuka lama yang lebih lengkap tetap berada di source untuk kompatibilitas, tetapi tidak menjadi navigasi utama.
 
 ## Fitur V1
 
 - Autentikasi sesi, reset password, profil, perubahan password, 2FA/passkey opsional, dan rate limiting login.
 - Registrasi publik dinonaktifkan; akun hanya dibuat administrator.
-- Peran global `ADMIN` dan `MEMBER`, serta peran proyek `OWNER`, `MANAGER`, `MEMBER`, dan `VIEWER`.
-- Direktori proyek, overview monitoring, status, health, progres berbasis kategori workflow, anggota, workflow, label, dan arsip.
-- Task ID per proyek seperti `IRP-42`, multi-assignee, prioritas, label, tanggal, deskripsi, komentar, attachment privat, dan activity log.
-- List view dengan grouping status, pencarian, filter URL, sorting server-side, pagination, quick add, dan pengubahan properti inline.
-- Board Kanban dengan drag-and-drop, perpindahan antar-status, reorder, optimistic update, dan persistensi posisi.
-- Home/My Work, My Tasks, Inbox notifikasi database, global search, dan administrasi pengguna.
+- Agenda Tim transparan yang dapat dilihat seluruh akun aktif, dengan pencarian dan filter area/orang.
+- Empat status kerja yang mudah dipahami: **Belum mulai**, **Proses**, **Menunggu**, dan **Selesai**.
+- Penugasan boleh kosong atau diberikan kepada satu/beberapa orang tanpa perlu mengatur anggota per area.
+- Jadwal opsional, arahan, keterangan status, hasil kegiatan berformat teks, tindak lanjut, tautan SharePoint, komentar, attachment privat, dan riwayat aktivitas.
+- Penerima tugas dan pembuatnya dapat memperbarui pekerjaan; semua anggota dapat membaca dan berdiskusi; admin dapat membantu mengelola semuanya.
+- Inbox dan email penugasan mengarah langsung ke detail pekerjaan pada Agenda Tim.
+- Struktur List/Board proyek lama tetap tersedia melalui route lama untuk kompatibilitas selama masa evaluasi.
 - Halaman error Inertia untuk 403, 404, 419, 422, 500, dan 503 pada produksi.
 
 ## Teknologi
@@ -29,7 +30,7 @@ Antarmuka desktop berorientasi produktivitas, dengan pola navigasi, List, Board,
 
 ## Arsitektur dan data
 
-Laravel dan React berada dalam satu deployment serta menggunakan session cookie dan CSRF standar Laravel. Semua mutasi domain melewati Form Request, Policy/Gate, dan route model binding yang di-scope ke proyek. Query layar utama menggunakan eager loading, pagination, dan payload presenter khusus agar model Eloquent tidak dikirim mentah ke browser.
+Laravel dan React berada dalam satu deployment serta menggunakan session cookie dan CSRF standar Laravel. Semua mutasi domain melewati Form Request, Policy/Gate, dan route model binding. Semua akun aktif dapat membaca pekerjaan departemen; perubahan isi dibatasi untuk admin, pembuat pekerjaan, atau orang yang ditugaskan. Query layar utama menggunakan eager loading, pagination, dan payload presenter khusus agar model Eloquent tidak dikirim mentah ke browser.
 
 Data utama tetap relasional: `users`, `projects`, `project_user`, `project_statuses`, `tasks`, `task_user`, `labels`, `label_task`, `comments`, `attachments`, `activity_logs`, `notifications`, `sessions`, dan `password_reset_tokens`. Metadata activity memakai JSONB. Foreign key, unique constraint, dan indeks mengikuti pola query utama.
 
@@ -41,11 +42,12 @@ Logo bersumber dari `public/brand/jasamarga-logo.png` dan simbol tanpa tulisan y
 
 ## Alur pekerjaan
 
-- Admin dapat membuka **Buat proyek** dari beranda, menu **Buat**, atau ikon tambah di sidebar Proyek Tim. Anggota biasa tetap mengikuti hak akses yang ditetapkan.
-- Proyek baru menampilkan petunjuk menambah anggota, membuat tugas, dan memilih penanggung jawab.
-- Beranda menampilkan tugas yang ditugaskan kepada pengguna, termasuk tanpa tenggat dan tenggat lebih dari tujuh hari. Tugas proyek yang diarsipkan atau tidak lagi dapat diakses tidak muncul dalam pekerjaan pribadi.
-- **Tugas Saya** membuka pekerjaan yang belum selesai secara default, dengan tab Selesai dan Semua. Checkbox menyelesaikan atau membuka kembali tugas sesuai workflow dan izin proyek.
-- Daftar proyek menampilkan status, penanggung jawab, tenggat, prioritas, dan komentar dalam kolom. Tombol komentar membuka detail langsung ke kolom penulisan komentar.
+1. Buka **Agenda Tim**, lalu tekan **Tambah pekerjaan**.
+2. Isi judul, area pekerjaan, orang yang ditugaskan, jadwal bila ada, dan arahan singkat. Penugasan dan jadwal boleh dikosongkan.
+3. Penerima membuka **Tugas Saya** atau detail pekerjaan, lalu memperbarui status dan keterangan terakhir.
+4. Setelah kegiatan, tempel rekap dari WhatsApp ke **Hasil kegiatan**. Isi **Tindak lanjut** agar pekerjaan berikutnya tidak hilang.
+5. Lampirkan dokumen langsung atau simpan tautan SharePoint. Anggota lain dapat membaca dan memberi komentar.
+6. Pekerjaan yang selesai berpindah ke tampilan **Selesai**, tetapi catatan dan lampirannya tetap tersimpan.
 
 ## Kebutuhan development
 
@@ -164,7 +166,7 @@ Panduan membuat repository **pm-internal**, push pertama, mengundang Adit, dan a
 
 ## Notifikasi email
 
-Email untuk penugasan tugas dan penambahan anggota proyek sudah tersedia dengan antrean pengiriman, email penerima terpisah dari login, dan allowlist untuk pilot. Pengiriman default nonaktif sampai SMTP dikonfigurasi. Lihat [panduan aktivasi Gmail dan rencana tahap berikutnya](docs/email-notifications.md).
+Email untuk penugasan pekerjaan sudah tersedia dengan antrean pengiriman, email penerima terpisah dari login, dan allowlist untuk pilot. Tautan email membuka detail pekerjaan pada Agenda Tim. Pengiriman default nonaktif sampai SMTP dikonfigurasi. Lihat [panduan aktivasi Gmail dan rencana tahap berikutnya](docs/email-notifications.md).
 
 ## Konfigurasi environment
 

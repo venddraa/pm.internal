@@ -15,7 +15,7 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        return $user->is_active && $project->members()->whereKey($user->id)->exists();
+        return $user->is_active;
     }
 
     public function create(User $user): bool

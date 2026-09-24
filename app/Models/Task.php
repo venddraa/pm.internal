@@ -22,6 +22,11 @@ use Illuminate\Support\Carbon;
  * @property int $created_by
  * @property Carbon|null $start_date
  * @property Carbon|null $due_date
+ * @property Carbon|null $scheduled_at
+ * @property string|null $status_note
+ * @property string|null $result_notes
+ * @property string|null $next_action
+ * @property string|null $reference_url
  * @property int $position
  * @property Carbon|null $completed_at
  * @property Carbon|null $archived_at
@@ -48,6 +53,11 @@ class Task extends Model
         'created_by',
         'start_date',
         'due_date',
+        'scheduled_at',
+        'status_note',
+        'result_notes',
+        'next_action',
+        'reference_url',
         'position',
         'completed_at',
         'archived_at',
@@ -59,6 +69,7 @@ class Task extends Model
             'priority' => TaskPriority::class,
             'start_date' => 'date',
             'due_date' => 'date',
+            'scheduled_at' => 'datetime',
             'completed_at' => 'datetime',
             'archived_at' => 'datetime',
         ];

@@ -11,26 +11,24 @@ class PersonalWorkOverviewTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_home_includes_assigned_tasks_without_dates_and_beyond_next_week(): void
+    public function test_home_is_a_shared_agenda_and_mine_filters_assignments(): void
     {
         $owner = $this->makeUser();
         $member = $this->makeUser();
         $project = $this->makeProject($owner, [[$member, ProjectMemberRole::Member]]);
-        $undated = $this->makeTask($project, $owner, ['assignee_ids' => [$member->id]]);
-        $undated->update(['due_date' => null]);
-        $future = $this->makeTask($project, $owner, ['assignee_ids' => [$member->id], 'due_date' => today()->addDays(30)->toDateString()]);
+        $first = $this->makeTask($project, $owner, ['assignee_ids' => [$member->id]]);
+        $second = $this->makeTask($project, $owner, ['assignee_ids' => [$member->id]]);
         $this->makeTask($project, $owner, ['assignee_ids' => [$owner->id]]);
-        $done = $project->statuses()->where('category', 'done')->firstOrFail();
 
         $this->actingAs($member)->get('/home')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('home/index')
-            ->where('summary.open', 2)
-            ->has('taskSections.no_date', 1)
-            ->where('taskSections.no_date.0.id', $undated->id)
-            ->where('taskSections.no_date.0.completion_status_id', $done->id)
-            ->where('taskSections.upcoming.0.id', $future->id)
+            ->where('stats.open', 3)
+            ->where('tasks.total', 3)
             ->where('navigation.my_tasks_count', 2)
             ->where('navigation.can_create_project', false));
+        $this->get('/home?view=mine')->assertInertia(fn (Assert $page) => $page
+            ->where('tasks.total', 2)
+            ->has('tasks.data', 2));
     }
 
     public function test_my_tasks_defaults_to_open_and_completed_tasks_have_their_own_view(): void
@@ -47,7 +45,7 @@ class PersonalWorkOverviewTest extends TestCase
         $this->get('/my-tasks?state=all')->assertInertia(fn (Assert $page) => $page->where('tasks.total', 2));
     }
 
-    public function test_viewer_cannot_complete_tasks_from_personal_work(): void
+    public function test_assignee_can_update_work_regardless_of_old_project_role(): void
     {
         $owner = $this->makeUser();
         $viewer = $this->makeUser();
@@ -55,8 +53,8 @@ class PersonalWorkOverviewTest extends TestCase
         $task = $this->makeTask($project, $owner, ['assignee_ids' => [$viewer->id]]);
         $done = $project->statuses()->where('category', 'done')->firstOrFail();
         $this->actingAs($viewer)->get('/my-tasks')->assertInertia(fn (Assert $page) => $page
-            ->where('tasks.data.0.completion_status_id', null));
-        $this->patch(route('tasks.update', [$project, $task]), ['status_id' => $done->id])->assertForbidden();
+            ->where('tasks.data.0.completion_status_id', $done->id));
+        $this->patch(route('tasks.update', [$project, $task]), ['status_id' => $done->id])->assertSessionHasNoErrors();
     }
 
     public function test_removed_members_and_archived_projects_are_excluded_from_personal_work(): void
@@ -66,10 +64,10 @@ class PersonalWorkOverviewTest extends TestCase
         $project = $this->makeProject($owner, [[$member, ProjectMemberRole::Member]]);
         $this->makeTask($project, $owner, ['assignee_ids' => [$member->id]]);
         $project->members()->detach($member);
-        $this->actingAs($member)->get('/my-tasks?state=all')->assertInertia(fn (Assert $page) => $page->where('tasks.total', 0));
+        $this->actingAs($member)->get('/my-tasks?state=all')->assertInertia(fn (Assert $page) => $page->where('tasks.total', 1));
         $project->members()->attach($member, ['role' => ProjectMemberRole::Member->value]);
         $project->update(['archived_at' => now()]);
-        $this->get('/home')->assertInertia(fn (Assert $page) => $page->where('summary.open', 0)->where('navigation.my_tasks_count', 0));
+        $this->get('/home')->assertInertia(fn (Assert $page) => $page->where('stats.open', 0)->where('navigation.my_tasks_count', 0));
     }
 
     public function test_assignee_can_complete_reopen_and_comment_using_personal_task_links(): void

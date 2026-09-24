@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notification;
 class WorkEmailNotification extends Notification
 {
     /**
-     * @param array<string, mixed>|null $details
+     * @param  array<string, mixed>|null  $details
      */
     public function __construct(
         public readonly string $title,
@@ -30,7 +30,7 @@ class WorkEmailNotification extends Notification
             : 'Rekan Kerja';
 
         return (new MailMessage)
-            ->subject('[PM Internal] '.$this->title)
+            ->subject('[Project Management Internal - ITPG] '.$this->title)
             ->view('emails.work_notification', [
                 'recipientName' => $recipientName,
                 'title' => $this->title,
