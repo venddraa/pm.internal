@@ -7,10 +7,8 @@ use App\Models\ActivityLog;
 use App\Models\Attachment;
 use App\Models\Comment;
 use App\Models\Project;
-use App\Models\ProjectStatusRecord;
 use App\Models\Task;
 use App\Models\User;
-use App\Support\AgendaStatus;
 use App\Support\InertiaData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -22,7 +20,7 @@ class HomeController extends Controller
     public function __invoke(Request $request): Response
     {
         $filters = $request->validate([
-            'view' => ['nullable', 'in:all,mine,today,waiting,done'],
+            'view' => ['nullable', 'in:all,mine,today,done'],
             'search' => ['nullable', 'string', 'max:120'],
             'area' => ['nullable', 'integer'],
             'person' => ['nullable', 'integer'],
@@ -45,7 +43,6 @@ class HomeController extends Controller
             'today' => $query
                 ->whereDate('scheduled_at', today())
                 ->whereHas('status', fn (Builder $statuses) => $statuses->where('category', '!=', StatusCategory::Done->value)),
-            'waiting' => $query->whereHas('status', fn (Builder $statuses) => $this->waitingStatus($statuses)),
             'done' => $query->whereHas('status', fn (Builder $statuses) => $statuses->where('category', StatusCategory::Done->value)),
             default => $query->whereHas('status', fn (Builder $statuses) => $statuses->where('category', '!=', StatusCategory::Done->value)),
         };
@@ -87,25 +84,11 @@ class HomeController extends Controller
                 'open' => (clone $open)->count(),
                 'mine' => (clone $open)->whereHas('assignees', fn (Builder $users) => $users->whereKey($request->user()->id))->count(),
                 'today' => (clone $open)->whereDate('scheduled_at', today())->count(),
-                'waiting' => (clone $open)->whereHas('status', fn (Builder $statuses) => $this->waitingStatus($statuses))->count(),
                 'unassigned' => (clone $open)->doesntHave('assignees')->count(),
             ],
             'selectedTask' => $this->selectedTask($request),
-            'statusOptions' => AgendaStatus::OPTIONS,
             'canCreate' => $request->user()->is_active && Project::query()->active()->exists(),
         ]);
-    }
-
-    /** @param Builder<ProjectStatusRecord> $query */
-    private function waitingStatus(Builder $query): void
-    {
-        $query->where('category', StatusCategory::InProgress->value)
-            ->where(function (Builder $names): void {
-                $names->whereRaw('LOWER(name) LIKE ?', ['%menunggu%'])
-                    ->orWhereRaw('LOWER(name) LIKE ?', ['%waiting%'])
-                    ->orWhereRaw('LOWER(name) LIKE ?', ['%blocked%'])
-                    ->orWhereRaw('LOWER(name) LIKE ?', ['%tertahan%']);
-            });
     }
 
     /** @return array<string, mixed>|null */

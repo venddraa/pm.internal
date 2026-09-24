@@ -3,7 +3,6 @@ import {
     CalendarDays,
     Check,
     CheckCircle2,
-    Circle,
     Clock3,
     ExternalLink,
     FileText,
@@ -42,9 +41,8 @@ import { cn } from '@/lib/utils';
 import type { Paginated, Task, TaskDetail, User } from '@/types';
 
 type Area = { id: number; name: string; key: string };
-type StatusOption = { value: string; label: string; color: string };
 type Filters = {
-    view: 'all' | 'mine' | 'today' | 'waiting' | 'done';
+    view: 'all' | 'mine' | 'today' | 'done';
     search?: string;
     area?: number;
     person?: number;
@@ -54,7 +52,6 @@ type Stats = {
     open: number;
     mine: number;
     today: number;
-    waiting: number;
     unassigned: number;
 };
 
@@ -62,7 +59,6 @@ const viewItems = [
     { value: 'all', label: 'Semua aktif' },
     { value: 'mine', label: 'Tugas saya' },
     { value: 'today', label: 'Hari ini' },
-    { value: 'waiting', label: 'Menunggu' },
     { value: 'done', label: 'Selesai' },
 ] as const;
 
@@ -108,6 +104,7 @@ function CreateAgendaDialog({
         title: '',
         area_id: areas[0]?.id ?? 0,
         description: '',
+        status_note: '',
         scheduled_at: '',
         assignee_ids: [] as number[],
     });
@@ -127,6 +124,7 @@ function CreateAgendaDialog({
             ...data,
             scheduled_at: data.scheduled_at || null,
             description: data.description || null,
+            status_note: data.status_note || null,
         }));
         form.post('/agenda/tasks', {
             preserveScroll: true,
@@ -261,6 +259,26 @@ function CreateAgendaDialog({
                         </div>
                     </div>
                     <div className="grid gap-2">
+                        <Label htmlFor="agenda-status-note">
+                            Status saat ini (opsional)
+                        </Label>
+                        <textarea
+                            id="agenda-status-note"
+                            value={form.data.status_note}
+                            onChange={(event) =>
+                                form.setData('status_note', event.target.value)
+                            }
+                            placeholder="Contoh: Menunggu jadwal dari vendor…"
+                            rows={2}
+                            className="border-input bg-background placeholder:text-muted-foreground resize-y rounded-xl border px-3 py-2 text-sm outline-none focus:border-[var(--sam-field-focus)]"
+                        />
+                        {form.errors.status_note && (
+                            <p className="text-destructive text-xs">
+                                {form.errors.status_note}
+                            </p>
+                        )}
+                    </div>
+                    <div className="grid gap-2">
                         <Label htmlFor="agenda-instruction">
                             Arahan singkat{' '}
                             <span className="text-muted-foreground">
@@ -314,7 +332,7 @@ function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) {
         <button
             type="button"
             onClick={onClick}
-            className="hover:bg-muted/35 grid w-full gap-3 border-t px-4 py-4 text-left transition-colors md:grid-cols-[minmax(250px,1fr)_155px_170px_135px_130px] md:items-center md:px-5"
+            className="hover:bg-muted/35 grid w-full gap-3 border-t px-4 py-4 text-left transition-colors xl:grid-cols-[minmax(210px,1.1fr)_130px_145px_120px_minmax(225px,1fr)] xl:items-center xl:px-5"
         >
             <span className="flex min-w-0 items-start gap-3">
                 <span
@@ -326,11 +344,6 @@ function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) {
                         {task.title}
                     </span>
                     <span className="text-muted-foreground mt-1 flex min-w-0 items-center gap-2 text-xs">
-                        <span className="truncate">
-                            {task.status_note ||
-                                task.next_action ||
-                                'Belum ada catatan terbaru'}
-                        </span>
                         {task.result_notes && (
                             <FileText className="size-3.5 shrink-0" />
                         )}
@@ -343,8 +356,8 @@ function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) {
                     </span>
                 </span>
             </span>
-            <span className="text-muted-foreground flex items-center gap-2 text-xs md:block">
-                <span className="md:hidden">Area:</span>
+            <span className="text-muted-foreground flex items-center gap-2 text-xs xl:block">
+                <span className="xl:hidden">Area:</span>
                 <span className="bg-muted text-foreground inline-flex max-w-full truncate rounded-md px-2 py-1 font-medium">
                     {task.project.name}
                 </span>
@@ -362,27 +375,26 @@ function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) {
                     {assigneeNames || 'Belum ditugaskan'}
                 </span>
             </span>
-            <span className="text-muted-foreground hidden items-center gap-1.5 text-xs md:flex">
+            <span className="text-muted-foreground hidden items-center gap-1.5 text-xs xl:flex">
                 <CalendarDays className="size-3.5 shrink-0" />
                 {schedule || 'Tanpa jadwal'}
             </span>
-            <span className="flex items-center justify-between gap-3 md:justify-start">
-                <span
-                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-                    style={{
-                        color: task.agenda_status_color,
-                        backgroundColor: `${task.agenda_status_color}14`,
-                    }}
-                >
-                    {task.agenda_status === 'done' ? (
-                        <CheckCircle2 className="size-3.5" />
-                    ) : (
-                        <Circle className="size-3.5" />
-                    )}
-                    {task.agenda_status_label}
+            <span className="flex min-w-0 items-start justify-between gap-3 xl:block">
+                <span className="min-w-0">
+                    <span className="text-muted-foreground mb-1 block text-[10px] font-semibold tracking-wide uppercase xl:hidden">
+                        Status saat ini
+                    </span>
+                    <span
+                        className={cn(
+                            'line-clamp-2 block text-xs leading-5 whitespace-pre-line',
+                            !task.status_note && 'text-muted-foreground italic',
+                        )}
+                    >
+                        {task.status_note || 'Belum ada catatan status'}
+                    </span>
                 </span>
                 {schedule && (
-                    <span className="text-muted-foreground flex items-center gap-1 text-[11px] md:hidden">
+                    <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-[11px] xl:hidden">
                         <CalendarDays className="size-3" />
                         {schedule}
                     </span>
@@ -395,12 +407,10 @@ function TaskRow({ task, onClick }: { task: Task; onClick: () => void }) {
 function TaskDetailSheet({
     task,
     people,
-    statusOptions,
     onClose,
 }: {
     task: TaskDetail | null;
     people: User[];
-    statusOptions: StatusOption[];
     onClose: () => void;
 }) {
     return (
@@ -410,38 +420,25 @@ function TaskDetailSheet({
                     side="right"
                     className="w-full gap-0 overflow-hidden p-0 sm:max-w-2xl"
                 >
-                    <AgendaDetail
-                        key={task.id}
-                        task={task}
-                        people={people}
-                        statusOptions={statusOptions}
-                    />
+                    <AgendaDetail key={task.id} task={task} people={people} />
                 </SheetContent>
             )}
         </Sheet>
     );
 }
 
-function AgendaDetail({
-    task,
-    people,
-    statusOptions,
-}: {
-    task: TaskDetail;
-    people: User[];
-    statusOptions: StatusOption[];
-}) {
+function AgendaDetail({ task, people }: { task: TaskDetail; people: User[] }) {
     const form = useForm({
         title: task.title,
         description: task.description ?? '',
         scheduled_at: toDateTimeInput(task.scheduled_at),
-        status_note: task.status_note ?? '',
         result_notes: task.result_notes ?? '',
         next_action: task.next_action ?? '',
         reference_url: task.reference_url ?? '',
         assignee_ids: task.assignees.map((person) => person.id),
     });
     const commentForm = useForm({ content: '' });
+    const statusForm = useForm({ status_note: task.status_note ?? '' });
     const [uploading, setUploading] = useState(false);
 
     const toggleAssignee = (id: number) => {
@@ -460,7 +457,6 @@ function AgendaDetail({
             ...data,
             scheduled_at: data.scheduled_at || null,
             description: data.description || null,
-            status_note: data.status_note || null,
             result_notes: data.result_notes || null,
             next_action: data.next_action || null,
             reference_url: data.reference_url || null,
@@ -470,13 +466,29 @@ function AgendaDetail({
         });
     };
 
-    const setStatus = (agendaStatus: string) => {
-        if (!task.permissions.update || agendaStatus === task.agenda_status)
-            return;
+    const saveStatus = (event: FormEvent) => {
+        event.preventDefault();
+        statusForm.transform((data) => ({
+            status_note: data.status_note || null,
+        }));
+        statusForm.patch(`/agenda/tasks/${task.id}`, {
+            preserveScroll: true,
+            onSuccess: () => statusForm.setDefaults(),
+        });
+    };
+
+    const toggleDone = () => {
+        if (!task.permissions.update) return;
         router.patch(
             `/agenda/tasks/${task.id}`,
-            { agenda_status: agendaStatus },
-            { preserveScroll: true },
+            {
+                agenda_status: task.agenda_status === 'done' ? 'todo' : 'done',
+                status_note: statusForm.data.status_note || null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => statusForm.setDefaults(),
+            },
         );
     };
 
@@ -521,42 +533,52 @@ function AgendaDetail({
                 </SheetDescription>
             </SheetHeader>
             <div className="sam-scrollbar min-h-0 flex-1 overflow-y-auto">
-                <section className="border-b px-5 py-4">
-                    <p className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-[0.12em] uppercase">
-                        Status
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                        {statusOptions.map((option) => (
-                            <button
-                                key={option.value}
-                                type="button"
-                                disabled={!task.permissions.update}
-                                onClick={() => setStatus(option.value)}
-                                className={cn(
-                                    'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-default',
-                                    option.value === task.agenda_status
-                                        ? 'border-transparent text-white'
-                                        : 'border-border bg-background hover:bg-muted',
-                                )}
-                                style={
-                                    option.value === task.agenda_status
-                                        ? { backgroundColor: option.color }
-                                        : undefined
-                                }
-                            >
-                                <span
-                                    className="size-2 rounded-full"
-                                    style={{
-                                        backgroundColor:
-                                            option.value === task.agenda_status
-                                                ? 'currentColor'
-                                                : option.color,
-                                    }}
-                                />
-                                {option.label}
-                            </button>
-                        ))}
-                    </div>
+                <section className="grid gap-3 border-b px-5 py-5">
+                    <form onSubmit={saveStatus} className="grid gap-3">
+                        <DetailTextarea
+                            id="detail-status-note"
+                            label="Status saat ini"
+                            hint="Tulis kondisi terbaru agar langsung terlihat di Agenda Tim."
+                            placeholder="Contoh: Menunggu konfirmasi jadwal dari vendor…"
+                            value={statusForm.data.status_note}
+                            disabled={!task.permissions.update}
+                            onChange={(value) =>
+                                statusForm.setData('status_note', value)
+                            }
+                            rows={3}
+                        />
+                        {statusForm.errors.status_note && (
+                            <p className="text-destructive text-xs">
+                                {statusForm.errors.status_note}
+                            </p>
+                        )}
+                        {task.permissions.update && (
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={toggleDone}
+                                >
+                                    <CheckCircle2 className="size-4" />
+                                    {task.agenda_status === 'done'
+                                        ? 'Buka lagi'
+                                        : 'Tandai selesai'}
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    size="sm"
+                                    disabled={
+                                        statusForm.processing ||
+                                        !statusForm.isDirty
+                                    }
+                                >
+                                    {statusForm.processing && <Spinner />}
+                                    Simpan status
+                                </Button>
+                            </div>
+                        )}
+                    </form>
                 </section>
                 <form onSubmit={save}>
                     <section className="grid gap-5 border-b px-5 py-5">
@@ -631,18 +653,6 @@ function AgendaDetail({
                         </div>
                     </section>
                     <section className="grid gap-5 border-b px-5 py-5">
-                        <DetailTextarea
-                            id="detail-status-note"
-                            label="Keterangan status"
-                            hint="Apa kondisi terakhirnya?"
-                            placeholder="Contoh: Menunggu konfirmasi jadwal dari area RO…"
-                            value={form.data.status_note}
-                            disabled={!task.permissions.update}
-                            onChange={(value) =>
-                                form.setData('status_note', value)
-                            }
-                            rows={3}
-                        />
                         <DetailTextarea
                             id="detail-instruction"
                             label="Arahan / konteks"
@@ -914,7 +924,6 @@ export default function Home({
     people,
     stats,
     selectedTask,
-    statusOptions,
     canCreate,
 }: {
     tasks: Paginated<Task>;
@@ -923,7 +932,6 @@ export default function Home({
     people: User[];
     stats: Stats;
     selectedTask: TaskDetail | null;
-    statusOptions: StatusOption[];
     canCreate: boolean;
 }) {
     const { auth } = usePage().props;
@@ -1010,9 +1018,7 @@ export default function Home({
                                               ? stats.mine
                                               : item.value === 'today'
                                                 ? stats.today
-                                                : item.value === 'waiting'
-                                                  ? stats.waiting
-                                                  : null;
+                                                : null;
                                     return (
                                         <button
                                             key={item.value}
@@ -1095,14 +1101,12 @@ export default function Home({
 
                         {tasks.data.length > 0 ? (
                             <>
-                                <div className="bg-muted/50 text-muted-foreground hidden h-9 grid-cols-[minmax(250px,1fr)_155px_170px_135px_130px] items-center px-5 text-[10px] font-semibold tracking-[0.1em] uppercase md:grid">
-                                    <span>
-                                        Pekerjaan &amp; catatan terakhir
-                                    </span>
+                                <div className="bg-muted/50 text-muted-foreground hidden h-9 grid-cols-[minmax(210px,1.1fr)_130px_145px_120px_minmax(225px,1fr)] items-center px-5 text-[10px] font-semibold tracking-[0.1em] uppercase xl:grid">
+                                    <span>Pekerjaan</span>
                                     <span>Area</span>
                                     <span>Ditugaskan kepada</span>
                                     <span>Jadwal</span>
-                                    <span>Status</span>
+                                    <span>Status saat ini</span>
                                 </div>
                                 {tasks.data.map((task) => (
                                     <TaskRow
@@ -1152,8 +1156,8 @@ export default function Home({
 
                     <p className="text-muted-foreground mt-4 flex items-center gap-1.5 text-xs">
                         <Clock3 className="size-3.5" />
-                        Klik pekerjaan untuk memperbarui hasil dan tindak
-                        lanjut.
+                        Klik pekerjaan untuk membaca dan memperbarui catatan
+                        status, hasil, atau tindak lanjut.
                     </p>
                 </div>
             </div>
@@ -1168,7 +1172,6 @@ export default function Home({
             <TaskDetailSheet
                 task={selectedTask}
                 people={people}
-                statusOptions={statusOptions}
                 onClose={closeTask}
             />
         </>

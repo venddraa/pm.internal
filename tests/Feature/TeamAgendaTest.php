@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Task;
-use App\Support\AgendaStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -23,12 +22,14 @@ class TeamAgendaTest extends TestCase
             'title' => 'Survey FO gardu ruas Dalkot',
             'area_id' => $project->id,
             'description' => 'Ikut bersama Dimas dan IT OPS.',
+            'status_note' => 'Menunggu konfirmasi jadwal dari area RO.',
             'scheduled_at' => '2026-09-25 09:30:00',
             'assignee_ids' => [$assignee->id],
         ])->assertSessionHasNoErrors();
 
         $task = Task::query()->firstOrFail();
         $this->assertSame('Survey FO gardu ruas Dalkot', $task->title);
+        $this->assertSame('Menunggu konfirmasi jadwal dari area RO.', $task->status_note);
         $this->assertSame('2026-09-25 09:30:00', $task->scheduled_at?->format('Y-m-d H:i:s'));
         $this->assertDatabaseHas('task_user', [
             'task_id' => $task->id,
@@ -67,6 +68,7 @@ class TeamAgendaTest extends TestCase
                 ->component('home/index')
                 ->where('selectedTask.id', $task->id)
                 ->where('selectedTask.agenda_status', 'waiting')
+                ->where('tasks.data.0.status_note', 'Menunggu jadwal dari area RO.')
                 ->where('selectedTask.permissions.update', true)
                 ->where('selectedTask.result_notes', $task->result_notes));
     }
@@ -89,23 +91,19 @@ class TeamAgendaTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function test_agenda_filters_mine_today_waiting_and_done(): void
+    public function test_agenda_filters_mine_today_and_done(): void
     {
         $owner = $this->makeUser();
         $member = $this->makeUser();
         $project = $this->makeProject($owner);
         $mine = $this->makeTask($project, $owner, ['assignee_ids' => [$member->id]]);
         $mine->update(['scheduled_at' => now()]);
-        $waiting = $this->makeTask($project, $owner);
-        $waiting->update(['status_id' => AgendaStatus::resolve($project, 'waiting')->id]);
         $this->makeTask($project, $owner, ['status_name' => 'DONE']);
 
         $this->actingAs($member)->get('/home?view=mine')
             ->assertInertia(fn (Assert $page) => $page->where('tasks.total', 1)->where('tasks.data.0.id', $mine->id));
         $this->get('/home?view=today')
             ->assertInertia(fn (Assert $page) => $page->where('tasks.total', 1)->where('tasks.data.0.id', $mine->id));
-        $this->get('/home?view=waiting')
-            ->assertInertia(fn (Assert $page) => $page->where('tasks.total', 1)->where('tasks.data.0.id', $waiting->id));
         $this->get('/home?view=done')
             ->assertInertia(fn (Assert $page) => $page->where('tasks.total', 1));
     }

@@ -2,14 +2,14 @@
 
 **Project Management Internal - ITPG** adalah agenda pekerjaan bersama untuk tim IT Planning & Governance Jasa Marga. Tujuan utamanya sederhana: ketika tim membuka aplikasi, semua orang langsung mengetahui pekerjaan yang aktif, siapa yang ditugaskan, kondisi terakhir, hasil kegiatan, dan tindak lanjutnya. Laravel menangani routing, autentikasi, otorisasi, validasi, transaksi, query, notifikasi, dan penyimpanan; React melalui Inertia menangani pengalaman kerja interaktif tanpa API SPA terpisah.
 
-Layar harian memakai satu daftar **Agenda Tim** dengan tampilan Semua Aktif, Tugas Saya, Hari Ini, Menunggu, dan Selesai. Istilah proyek pada data lama dipakai sebagai **area pekerjaan** seperti RFID, Audit, Compliance, RSTI, atau Umum. Antarmuka lama yang lebih lengkap tetap berada di source untuk kompatibilitas, tetapi tidak menjadi navigasi utama.
+Layar harian memakai satu daftar **Agenda Tim** dengan tampilan Semua Aktif, Tugas Saya, Hari Ini, dan Selesai. Istilah proyek pada data lama dipakai sebagai **area pekerjaan** seperti RFID, Audit, Compliance, RSTI, atau Umum. Antarmuka lama yang lebih lengkap tetap berada di source untuk kompatibilitas, tetapi tidak menjadi navigasi utama.
 
 ## Fitur V1
 
 - Autentikasi sesi, reset password, profil, perubahan password, 2FA/passkey opsional, dan rate limiting login.
 - Registrasi publik dinonaktifkan; akun hanya dibuat administrator.
 - Agenda Tim transparan yang dapat dilihat seluruh akun aktif, dengan pencarian dan filter area/orang.
-- Empat status kerja yang mudah dipahami: **Belum mulai**, **Proses**, **Menunggu**, dan **Selesai**.
+- Catatan **Status saat ini** ditampilkan langsung di daftar pekerjaan; teks panjang dapat dibaca dan diubah lewat detail. Pekerjaan dapat ditandai selesai atau dibuka kembali.
 - Penugasan boleh kosong atau diberikan kepada satu/beberapa orang tanpa perlu mengatur anggota per area.
 - Jadwal opsional, arahan, keterangan status, hasil kegiatan berformat teks, tindak lanjut, tautan SharePoint, komentar, attachment privat, dan riwayat aktivitas.
 - Penerima tugas dan pembuatnya dapat memperbarui pekerjaan; semua anggota dapat membaca dan berdiskusi; admin dapat membantu mengelola semuanya.
@@ -43,8 +43,8 @@ Logo bersumber dari `public/brand/jasamarga-logo.png` dan simbol tanpa tulisan y
 ## Alur pekerjaan
 
 1. Buka **Agenda Tim**, lalu tekan **Tambah pekerjaan**.
-2. Isi judul, area pekerjaan, orang yang ditugaskan, jadwal bila ada, dan arahan singkat. Penugasan dan jadwal boleh dikosongkan.
-3. Penerima membuka **Tugas Saya** atau detail pekerjaan, lalu memperbarui status dan keterangan terakhir.
+2. Isi judul, area pekerjaan, orang yang ditugaskan, jadwal bila ada, catatan status awal, dan arahan singkat. Penugasan dan jadwal boleh dikosongkan.
+3. Penerima membuka **Tugas Saya** atau detail pekerjaan, lalu memperbarui catatan status terakhir.
 4. Setelah kegiatan, tempel rekap dari WhatsApp ke **Hasil kegiatan**. Isi **Tindak lanjut** agar pekerjaan berikutnya tidak hilang.
 5. Lampirkan dokumen langsung atau simpan tautan SharePoint. Anggota lain dapat membaca dan memberi komentar.
 6. Pekerjaan yang selesai berpindah ke tampilan **Selesai**, tetapi catatan dan lampirannya tetap tersimpan.

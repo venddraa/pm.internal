@@ -24,6 +24,7 @@ class StoreAgendaTaskRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'area_id' => ['required', 'integer', Rule::exists('projects', 'id')->whereNull('archived_at')],
             'description' => ['nullable', 'string', 'max:20000'],
+            'status_note' => ['nullable', 'string', 'max:5000'],
             'scheduled_at' => ['nullable', 'date'],
             'assignee_ids' => ['sometimes', 'array', 'max:30'],
             'assignee_ids.*' => [
