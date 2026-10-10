@@ -193,6 +193,8 @@ composer require league/flysystem-aws-s3-v3 "^3.0" --with-all-dependencies
 
 Lakukan migrasi object yang sudah ada sebelum mengganti disk pada instalasi yang telah berisi attachment.
 
+Akses dari Home Screen iPhone dan batasan pilihan hosting dijelaskan di [panduan PWA iPhone](docs/pwa-iphone.md).
+
 ## Persiapan produksi
 
 Gunakan PHP-FPM + Nginx/Apache dengan document root menuju `public/`, PostgreSQL terkelola, HTTPS wajib, dan proses deployment yang atomik. Konfigurasi minimum:

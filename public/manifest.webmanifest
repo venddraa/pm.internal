@@ -1,0 +1,19 @@
+{
+    "name": "Project Management Internal - ITPG",
+    "short_name": "ITPG",
+    "description": "Agenda pekerjaan tim IT Planning & Governance",
+    "lang": "id-ID",
+    "start_url": "/home",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#153e70",
+    "theme_color": "#153e70",
+    "icons": [
+        {
+            "src": "/brand/JSMR.JK.png",
+            "sizes": "833x839",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}
