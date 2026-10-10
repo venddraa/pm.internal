@@ -171,7 +171,15 @@ class DatabaseSeeder extends Seeder
     /** @return array<string, User> */
     private function createUsers(): array
     {
-        $password = 'Monitor123!';
+        if (app()->environment('production')) {
+            throw new \RuntimeException('Sample data cannot be seeded in production.');
+        }
+
+        $password = config('demo.seed_password');
+
+        if (! is_string($password) || mb_strlen($password) < 16) {
+            throw new \RuntimeException('Set DEMO_SEED_PASSWORD to a unique password of at least 16 characters before seeding sample accounts.');
+        }
 
         return [
             'admin' => User::create(['name' => 'Joko Santoso', 'email' => 'admin@monitor.local', 'password' => $password, 'role' => GlobalUserRole::Admin, 'is_active' => true, 'email_verified_at' => now()]),

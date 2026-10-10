@@ -19,7 +19,7 @@ Belum aktif sampai akun Gmail pengirim dikonfigurasi. Tidak ada password Gmail a
 docker compose exec app php artisan migrate
 ```
 
-Isi email penerima pada profil akun yang relevan. Gunakan alamat email sungguhan; `nama@planning` adalah ID login internal. Untuk database clone baru, akun dan alamat penerima perlu disiapkan kembali.
+Isi email penerima pada profil akun yang relevan. Gunakan alamat email sungguhan; ID login internal berbeda dari email penerima. Untuk database clone baru, akun dan alamat penerima perlu disiapkan kembali.
 
 ## 2. Siapkan pengirim Gmail
 
@@ -52,14 +52,14 @@ Untuk tautan email yang dapat dibuka anggota tim, `APP_URL` harus berupa URL apl
 
 ```bash
 docker compose exec app php artisan config:clear
-docker compose exec app php artisan notifications:test-email vendra@planning
+docker compose exec app php artisan notifications:test-email NAMA_AKUN
 ```
 
 Command di atas menampilkan penerima dan subjek tanpa mengirim. Setelah alamat/config benar, jalankan satu per satu dan cek inbox/spam:
 
 ```bash
-docker compose exec app php artisan notifications:test-email vendra@planning --send
-docker compose exec app php artisan notifications:test-email asti@planning --send
+docker compose exec app php artisan notifications:test-email NAMA_AKUN --send
+docker compose exec app php artisan notifications:test-email NAMA_AKUN_LAIN --send
 ```
 
 Pesan sukses berarti SMTP menerima email, bukan bukti email sudah masuk inbox. Tes ini tidak membuat tugas/proyek atau notifikasi palsu pada inbox aplikasi.

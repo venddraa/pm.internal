@@ -5,7 +5,7 @@ Aplikasi ini dapat dibuka sebagai web app layar penuh dari Home Screen iPhone. K
 ## Syarat sebelum dicoba oleh tim
 
 - Deploy **seluruh aplikasi Laravel + React/Inertia** di domain HTTPS yang dapat diakses iPhone, bukan hanya folder `public/build`.
-- Sediakan PostgreSQL persisten, worker untuk antrean email, dan storage persisten/objek untuk lampiran privat. Konfigurasi produksi umum ada di [README](../README.md#persiapan-produksi).
+- Sediakan PostgreSQL persisten, worker untuk antrean email, dan storage persisten/objek untuk lampiran privat. Konfigurasi produksi umum ada di [panduan setup](setup.md#persiapan-produksi).
 - Set `APP_URL` ke domain final dan `SESSION_SECURE_COOKIE=true`. Uji login, buka Agenda Tim, simpan catatan status, unggah/unduh lampiran, lalu uji notifikasi sebelum mengundang anggota lain.
 - Bila data lokal hendak dibawa ke produksi, migrasikan database dan lampiran dengan sengaja. Deployment baru tidak otomatis menyalin volume Docker lokal.
 

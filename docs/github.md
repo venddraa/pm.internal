@@ -2,8 +2,8 @@
 
 ## Pemilik repository
 
-1. Di GitHub, buat repository **pm-internal**, pilih **Private** untuk source aplikasi internal.
-2. Buat repository kosong: jangan centang README, .gitignore, atau license karena sudah tersedia di project.
+1. Di GitHub, buat repository **pm-internal**, tentukan visibilitas sesuai kebutuhan tim; public akan membuka seluruh source dan riwayat commit.
+2. Buat repository kosong: jangan centang README atau .gitignore karena sudah tersedia di project. Lisensi open-source perlu dipilih secara terpisah bila memang ingin memberi izin penggunaan ulang.
 3. Dari terminal di folder project, jalankan command berikut. Ganti `USERNAME_GITHUB` dengan username GitHub kamu:
 
 ```bash
@@ -26,7 +26,7 @@ Autentikasi HTTPS menggunakan credential manager atau token GitHub ketika dimint
 Jika `origin` sudah ada, periksa `git remote -v` dan gunakan `git remote set-url origin URL_REPOSITORY_YANG_BENAR`, bukan menambah ulang. Jika repository telanjur berisi commit, jangan force-push: sinkronkan histori terlebih dahulu.
 
 4. Buka **Settings → Collaborators**, undang akun GitHub Adit, lalu Adit menerima undangannya.
-5. Adit mengikuti [README](../README.md#setup-pertama-untuk-adit--clone-baru).
+5. Adit mengikuti [panduan setup](setup.md#setup-pertama-untuk-adit--clone-baru).
 
 ## Alur kerja berdua
 
